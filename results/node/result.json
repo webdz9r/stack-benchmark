@@ -1,0 +1,856 @@
+{
+  "name": "node",
+  "label": "Node",
+  "description": "Fastify, built-in node:sqlite on worker threads",
+  "concurrency": "1 process: event loop + 4 reader threads + 1 writer thread",
+  "port": 7880,
+  "slot": 2,
+  "status": "ok",
+  "error": "",
+  "versions": [
+    "v26.7.0"
+  ],
+  "started_at": "2026-09-30T15:07:23",
+  "background_before_cores": 1.16,
+  "run": {
+    "machine": {
+      "os": "Darwin",
+      "os_version": "macOS 27.0",
+      "kernel": "27.0.0",
+      "arch": "arm64",
+      "cpu": "Apple M5 Max",
+      "cores_logical": 18,
+      "cores_physical": 18,
+      "core_types": "6 Super, 12 Performance",
+      "memory_gb": 36.0,
+      "power": "AC power",
+      "python": "3.14.6"
+    },
+    "git": {
+      "commit": "uncommitted",
+      "dirty": true
+    },
+    "memory_metric": "physical footprint (vmmap)",
+    "started_at": "2026-09-30T15:07:18",
+    "profile": {
+      "name": "standard",
+      "endpoint_warmup": 2,
+      "endpoint_duration": 8,
+      "levels": [
+        1000,
+        2000,
+        3000,
+        4000,
+        5000,
+        6000
+      ],
+      "ramp_warmup": 10,
+      "ramp_duration": 30,
+      "seed_count": 100000,
+      "description": "the published numbers: 6 user levels (~6 min per stack)"
+    },
+    "cores": 4,
+    "dataset": 110000,
+    "reference": "rust",
+    "stop_p99_ms": 2000,
+    "think_ms": 3000,
+    "edit_pct": 5,
+    "endpoint_clients": 50,
+    "notes": "node: one process, better-sqlite3 on 4 reader threads + writer thread, shared cache",
+    "busy_threshold": 1.8
+  },
+  "build_s": 0.3,
+  "conformance": {
+    "ok": true,
+    "checksum": "4757200eff847274560a4359166b3c6977b0fb45b0bd5f7286c11a53a91fc86a"
+  },
+  "startup_ms": 175,
+  "background_idle_cores": 0.79,
+  "processes": 1,
+  "idle_memory_mb": 102.3,
+  "idle_rss_mb": 138.2,
+  "parity": {
+    "ok": true,
+    "summary": "71 identical, 0 mismatched; 42/42 contract checks passed"
+  },
+  "endpoints": [
+    {
+      "label": "Single contact",
+      "path": "/contacts/77777",
+      "result": {
+        "actions_per_s": 0.0,
+        "all": {
+          "count": 310303,
+          "max_ms": 3.555,
+          "p50_ms": 1.205,
+          "p95_ms": 1.96,
+          "p99_ms": 2.554,
+          "req_s": 38787.875
+        },
+        "duration_s": 8,
+        "edit_pct": 5,
+        "endpoint": "/contacts/77777",
+        "error_samples": [],
+        "errors": 0,
+        "kinds": {
+          "endpoint": {
+            "count": 310303,
+            "max_ms": 3.555,
+            "p50_ms": 1.205,
+            "p95_ms": 1.96,
+            "p99_ms": 2.554,
+            "req_s": 38787.875
+          }
+        },
+        "not_modified": 0,
+        "think_ms": 0,
+        "users": 50,
+        "warmup_s": 2
+      }
+    },
+    {
+      "label": "List page 1 (uncached)",
+      "path": "/contacts?limit=60",
+      "result": {
+        "actions_per_s": 0.0,
+        "all": {
+          "count": 133113,
+          "max_ms": 7.224,
+          "p50_ms": 2.946,
+          "p95_ms": 3.358,
+          "p99_ms": 4.347,
+          "req_s": 16639.125
+        },
+        "duration_s": 8,
+        "edit_pct": 5,
+        "endpoint": "/contacts?limit=60",
+        "error_samples": [],
+        "errors": 0,
+        "kinds": {
+          "endpoint": {
+            "count": 133113,
+            "max_ms": 7.224,
+            "p50_ms": 2.946,
+            "p95_ms": 3.358,
+            "p99_ms": 4.347,
+            "req_s": 16639.125
+          }
+        },
+        "not_modified": 0,
+        "think_ms": 0,
+        "users": 50,
+        "warmup_s": 2
+      }
+    },
+    {
+      "label": "List page at offset 55,000",
+      "path": "/contacts?limit=60&offset=55000",
+      "result": {
+        "actions_per_s": 0.0,
+        "all": {
+          "count": 46016,
+          "max_ms": 11.003,
+          "p50_ms": 8.595,
+          "p95_ms": 9.655,
+          "p99_ms": 10.026,
+          "req_s": 5752.0
+        },
+        "duration_s": 8,
+        "edit_pct": 5,
+        "endpoint": "/contacts?limit=60&offset=55000",
+        "error_samples": [],
+        "errors": 0,
+        "kinds": {
+          "endpoint": {
+            "count": 46016,
+            "max_ms": 11.003,
+            "p50_ms": 8.595,
+            "p95_ms": 9.655,
+            "p99_ms": 10.026,
+            "req_s": 5752.0
+          }
+        },
+        "not_modified": 0,
+        "think_ms": 0,
+        "users": 50,
+        "warmup_s": 2
+      }
+    },
+    {
+      "label": "Search `smith` (cached)",
+      "path": "/contacts?limit=60&q=smith",
+      "result": {
+        "actions_per_s": 0.0,
+        "all": {
+          "count": 165078,
+          "max_ms": 5.737,
+          "p50_ms": 2.292,
+          "p95_ms": 2.95,
+          "p99_ms": 3.714,
+          "req_s": 20634.75
+        },
+        "duration_s": 8,
+        "edit_pct": 5,
+        "endpoint": "/contacts?limit=60&q=smith",
+        "error_samples": [],
+        "errors": 0,
+        "kinds": {
+          "endpoint": {
+            "count": 165078,
+            "max_ms": 5.737,
+            "p50_ms": 2.292,
+            "p95_ms": 2.95,
+            "p99_ms": 3.714,
+            "req_s": 20634.75
+          }
+        },
+        "not_modified": 0,
+        "think_ms": 0,
+        "users": 50,
+        "warmup_s": 2
+      }
+    },
+    {
+      "label": "A\u2013Z index (cached)",
+      "path": "/contacts/letters",
+      "result": {
+        "actions_per_s": 0.0,
+        "all": {
+          "count": 357832,
+          "max_ms": 4.703,
+          "p50_ms": 1.024,
+          "p95_ms": 1.967,
+          "p99_ms": 2.143,
+          "req_s": 44729.0
+        },
+        "duration_s": 8,
+        "edit_pct": 5,
+        "endpoint": "/contacts/letters",
+        "error_samples": [],
+        "errors": 0,
+        "kinds": {
+          "endpoint": {
+            "count": 357832,
+            "max_ms": 4.703,
+            "p50_ms": 1.024,
+            "p95_ms": 1.967,
+            "p99_ms": 2.143,
+            "req_s": 44729.0
+          }
+        },
+        "not_modified": 0,
+        "think_ms": 0,
+        "users": 50,
+        "warmup_s": 2
+      }
+    },
+    {
+      "label": "Stats (cached)",
+      "path": "/stats",
+      "result": {
+        "actions_per_s": 0.0,
+        "all": {
+          "count": 462028,
+          "max_ms": 7.056,
+          "p50_ms": 0.746,
+          "p95_ms": 1.55,
+          "p99_ms": 2.107,
+          "req_s": 57753.5
+        },
+        "duration_s": 8,
+        "edit_pct": 5,
+        "endpoint": "/stats",
+        "error_samples": [],
+        "errors": 0,
+        "kinds": {
+          "endpoint": {
+            "count": 462028,
+            "max_ms": 7.056,
+            "p50_ms": 0.746,
+            "p95_ms": 1.55,
+            "p99_ms": 2.107,
+            "req_s": 57753.5
+          }
+        },
+        "not_modified": 0,
+        "think_ms": 0,
+        "users": 50,
+        "warmup_s": 2
+      }
+    }
+  ],
+  "ramp": [
+    {
+      "users": 1000,
+      "result": {
+        "actions_per_s": 328.93333333333334,
+        "all": {
+          "count": 19004,
+          "max_ms": 34.031,
+          "p50_ms": 0.757,
+          "p95_ms": 7.159,
+          "p99_ms": 11.047,
+          "req_s": 633.4666666666667
+        },
+        "duration_s": 30,
+        "edit_pct": 5,
+        "endpoint": null,
+        "error_samples": [],
+        "errors": 0,
+        "kinds": {
+          "contact": {
+            "count": 3006,
+            "max_ms": 9.056,
+            "p50_ms": 0.207,
+            "p95_ms": 0.896,
+            "p99_ms": 3.465,
+            "req_s": 100.2
+          },
+          "letters": {
+            "count": 1058,
+            "max_ms": 14.612,
+            "p50_ms": 3.427,
+            "p95_ms": 8.272,
+            "p99_ms": 9.837,
+            "req_s": 35.266666666666666
+          },
+          "list": {
+            "count": 4553,
+            "max_ms": 34.031,
+            "p50_ms": 0.771,
+            "p95_ms": 9.931,
+            "p99_ms": 26.422,
+            "req_s": 151.76666666666668
+          },
+          "search": {
+            "count": 4336,
+            "max_ms": 17.133,
+            "p50_ms": 2.32,
+            "p95_ms": 7.162,
+            "p99_ms": 9.34,
+            "req_s": 144.53333333333333
+          },
+          "search-letters": {
+            "count": 4336,
+            "max_ms": 11.494,
+            "p50_ms": 1.207,
+            "p95_ms": 4.762,
+            "p99_ms": 7.007,
+            "req_s": 144.53333333333333
+          },
+          "stats": {
+            "count": 587,
+            "max_ms": 12.022,
+            "p50_ms": 5.24,
+            "p95_ms": 8.023,
+            "p99_ms": 10.073,
+            "req_s": 19.566666666666666
+          },
+          "tags": {
+            "count": 587,
+            "max_ms": 12.025,
+            "p50_ms": 2.575,
+            "p95_ms": 4.594,
+            "p99_ms": 7.324,
+            "req_s": 19.566666666666666
+          },
+          "write": {
+            "count": 541,
+            "max_ms": 13.746,
+            "p50_ms": 0.478,
+            "p95_ms": 0.85,
+            "p99_ms": 8.409,
+            "req_s": 18.033333333333335
+          }
+        },
+        "not_modified": 2318,
+        "think_ms": 3000,
+        "users": 1000,
+        "warmup_s": 10
+      },
+      "cpu_cores": 1.11,
+      "background_cores": 0.92,
+      "rss_mb": 623.2,
+      "memory_after_mb": 632.9,
+      "server_alive": true
+    },
+    {
+      "users": 2000,
+      "result": {
+        "actions_per_s": 650.1,
+        "all": {
+          "count": 37816,
+          "max_ms": 32.188,
+          "p50_ms": 0.563,
+          "p95_ms": 6.779,
+          "p99_ms": 10.915,
+          "req_s": 1260.5333333333333
+        },
+        "duration_s": 30,
+        "edit_pct": 5,
+        "endpoint": null,
+        "error_samples": [],
+        "errors": 0,
+        "kinds": {
+          "contact": {
+            "count": 5845,
+            "max_ms": 14.258,
+            "p50_ms": 0.204,
+            "p95_ms": 2.415,
+            "p99_ms": 5.108,
+            "req_s": 194.83333333333334
+          },
+          "letters": {
+            "count": 2082,
+            "max_ms": 15.681,
+            "p50_ms": 3.124,
+            "p95_ms": 8.002,
+            "p99_ms": 9.957,
+            "req_s": 69.4
+          },
+          "list": {
+            "count": 8963,
+            "max_ms": 32.188,
+            "p50_ms": 0.734,
+            "p95_ms": 9.643,
+            "p99_ms": 24.948,
+            "req_s": 298.76666666666665
+          },
+          "search": {
+            "count": 8796,
+            "max_ms": 20.138,
+            "p50_ms": 0.49,
+            "p95_ms": 6.864,
+            "p99_ms": 9.484,
+            "req_s": 293.2
+          },
+          "search-letters": {
+            "count": 8796,
+            "max_ms": 17.707,
+            "p50_ms": 0.208,
+            "p95_ms": 4.473,
+            "p99_ms": 6.873,
+            "req_s": 293.2
+          },
+          "stats": {
+            "count": 1139,
+            "max_ms": 14.788,
+            "p50_ms": 4.971,
+            "p95_ms": 8.025,
+            "p99_ms": 9.795,
+            "req_s": 37.96666666666667
+          },
+          "tags": {
+            "count": 1139,
+            "max_ms": 12.537,
+            "p50_ms": 2.368,
+            "p95_ms": 5.383,
+            "p99_ms": 7.84,
+            "req_s": 37.96666666666667
+          },
+          "write": {
+            "count": 1056,
+            "max_ms": 11.362,
+            "p50_ms": 0.439,
+            "p95_ms": 1.223,
+            "p99_ms": 8.791,
+            "req_s": 35.2
+          }
+        },
+        "not_modified": 4600,
+        "think_ms": 3000,
+        "users": 2000,
+        "warmup_s": 10
+      },
+      "cpu_cores": 1.74,
+      "background_cores": 0.61,
+      "rss_mb": 1034.4,
+      "memory_after_mb": 798.1,
+      "server_alive": true
+    },
+    {
+      "users": 3000,
+      "result": {
+        "actions_per_s": 981.1666666666666,
+        "all": {
+          "count": 57052,
+          "max_ms": 44.402,
+          "p50_ms": 0.549,
+          "p95_ms": 8.124,
+          "p99_ms": 14.109,
+          "req_s": 1901.7333333333333
+        },
+        "duration_s": 30,
+        "edit_pct": 5,
+        "endpoint": null,
+        "error_samples": [],
+        "errors": 0,
+        "kinds": {
+          "contact": {
+            "count": 8837,
+            "max_ms": 22.672,
+            "p50_ms": 0.23,
+            "p95_ms": 4.919,
+            "p99_ms": 9.428,
+            "req_s": 294.56666666666666
+          },
+          "letters": {
+            "count": 3093,
+            "max_ms": 23.702,
+            "p50_ms": 3.063,
+            "p95_ms": 8.532,
+            "p99_ms": 12.507,
+            "req_s": 103.1
+          },
+          "list": {
+            "count": 13432,
+            "max_ms": 44.402,
+            "p50_ms": 0.903,
+            "p95_ms": 10.768,
+            "p99_ms": 25.11,
+            "req_s": 447.73333333333335
+          },
+          "search": {
+            "count": 13365,
+            "max_ms": 26.556,
+            "p50_ms": 0.444,
+            "p95_ms": 8.33,
+            "p99_ms": 13.178,
+            "req_s": 445.5
+          },
+          "search-letters": {
+            "count": 13365,
+            "max_ms": 24.886,
+            "p50_ms": 0.175,
+            "p95_ms": 5.776,
+            "p99_ms": 10.833,
+            "req_s": 445.5
+          },
+          "stats": {
+            "count": 1699,
+            "max_ms": 26.24,
+            "p50_ms": 5.179,
+            "p95_ms": 9.738,
+            "p99_ms": 13.802,
+            "req_s": 56.63333333333333
+          },
+          "tags": {
+            "count": 1699,
+            "max_ms": 23.702,
+            "p50_ms": 2.379,
+            "p95_ms": 7.241,
+            "p99_ms": 11.853,
+            "req_s": 56.63333333333333
+          },
+          "write": {
+            "count": 1562,
+            "max_ms": 12.196,
+            "p50_ms": 0.462,
+            "p95_ms": 1.403,
+            "p99_ms": 8.766,
+            "req_s": 52.06666666666667
+          }
+        },
+        "not_modified": 6882,
+        "think_ms": 3000,
+        "users": 3000,
+        "warmup_s": 10
+      },
+      "cpu_cores": 2.4,
+      "background_cores": 0.89,
+      "rss_mb": 1115.1,
+      "memory_after_mb": 895.9,
+      "server_alive": true
+    },
+    {
+      "users": 4000,
+      "result": {
+        "actions_per_s": 1313.9666666666667,
+        "all": {
+          "count": 76553,
+          "max_ms": 70.45,
+          "p50_ms": 0.611,
+          "p95_ms": 15.813,
+          "p99_ms": 31.676,
+          "req_s": 2551.766666666667
+        },
+        "duration_s": 30,
+        "edit_pct": 5,
+        "endpoint": null,
+        "error_samples": [],
+        "errors": 0,
+        "kinds": {
+          "contact": {
+            "count": 11808,
+            "max_ms": 45.084,
+            "p50_ms": 0.5,
+            "p95_ms": 15.347,
+            "p99_ms": 30.857,
+            "req_s": 393.6
+          },
+          "letters": {
+            "count": 4195,
+            "max_ms": 46.881,
+            "p50_ms": 3.049,
+            "p95_ms": 14.423,
+            "p99_ms": 27.888,
+            "req_s": 139.83333333333334
+          },
+          "list": {
+            "count": 17935,
+            "max_ms": 70.45,
+            "p50_ms": 1.552,
+            "p95_ms": 19.715,
+            "p99_ms": 35.373,
+            "req_s": 597.8333333333334
+          },
+          "search": {
+            "count": 18008,
+            "max_ms": 51.764,
+            "p50_ms": 0.45,
+            "p95_ms": 15.667,
+            "p99_ms": 31.823,
+            "req_s": 600.2666666666667
+          },
+          "search-letters": {
+            "count": 18008,
+            "max_ms": 48.141,
+            "p50_ms": 0.174,
+            "p95_ms": 13.231,
+            "p99_ms": 29.655,
+            "req_s": 600.2666666666667
+          },
+          "stats": {
+            "count": 2259,
+            "max_ms": 46.466,
+            "p50_ms": 6.069,
+            "p95_ms": 18.171,
+            "p99_ms": 34.224,
+            "req_s": 75.3
+          },
+          "tags": {
+            "count": 2259,
+            "max_ms": 45.234,
+            "p50_ms": 2.579,
+            "p95_ms": 15.785,
+            "p99_ms": 31.696,
+            "req_s": 75.3
+          },
+          "write": {
+            "count": 2081,
+            "max_ms": 12.389,
+            "p50_ms": 0.493,
+            "p95_ms": 1.575,
+            "p99_ms": 9.286,
+            "req_s": 69.36666666666666
+          }
+        },
+        "not_modified": 9257,
+        "think_ms": 3000,
+        "users": 4000,
+        "warmup_s": 10
+      },
+      "cpu_cores": 3.06,
+      "background_cores": 0.69,
+      "rss_mb": 1041.0,
+      "memory_after_mb": 969.2,
+      "server_alive": true
+    },
+    {
+      "users": 5000,
+      "result": {
+        "actions_per_s": 1635.8666666666666,
+        "all": {
+          "count": 94896,
+          "max_ms": 132.147,
+          "p50_ms": 1.443,
+          "p95_ms": 55.922,
+          "p99_ms": 80.205,
+          "req_s": 3163.2
+        },
+        "duration_s": 30,
+        "edit_pct": 5,
+        "endpoint": null,
+        "error_samples": [],
+        "errors": 0,
+        "kinds": {
+          "contact": {
+            "count": 14626,
+            "max_ms": 106.023,
+            "p50_ms": 7.401,
+            "p95_ms": 58.371,
+            "p99_ms": 85.577,
+            "req_s": 487.53333333333336
+          },
+          "letters": {
+            "count": 5130,
+            "max_ms": 107.694,
+            "p50_ms": 3.223,
+            "p95_ms": 55.762,
+            "p99_ms": 78.488,
+            "req_s": 171.0
+          },
+          "list": {
+            "count": 22322,
+            "max_ms": 132.147,
+            "p50_ms": 6.38,
+            "p95_ms": 60.449,
+            "p99_ms": 87.106,
+            "req_s": 744.0666666666667
+          },
+          "search": {
+            "count": 22406,
+            "max_ms": 110.617,
+            "p50_ms": 0.504,
+            "p95_ms": 51.929,
+            "p99_ms": 69.628,
+            "req_s": 746.8666666666667
+          },
+          "search-letters": {
+            "count": 22406,
+            "max_ms": 110.301,
+            "p50_ms": 0.197,
+            "p95_ms": 49.437,
+            "p99_ms": 66.661,
+            "req_s": 746.8666666666667
+          },
+          "stats": {
+            "count": 2738,
+            "max_ms": 103.838,
+            "p50_ms": 10.074,
+            "p95_ms": 61.46,
+            "p99_ms": 88.63,
+            "req_s": 91.26666666666667
+          },
+          "tags": {
+            "count": 2738,
+            "max_ms": 100.45,
+            "p50_ms": 7.386,
+            "p95_ms": 58.366,
+            "p99_ms": 85.987,
+            "req_s": 91.26666666666667
+          },
+          "write": {
+            "count": 2530,
+            "max_ms": 18.05,
+            "p50_ms": 0.56,
+            "p95_ms": 1.495,
+            "p99_ms": 10.107,
+            "req_s": 84.33333333333333
+          }
+        },
+        "not_modified": 11266,
+        "think_ms": 3000,
+        "users": 5000,
+        "warmup_s": 10
+      },
+      "cpu_cores": 3.84,
+      "background_cores": 1.15,
+      "rss_mb": 1278.5,
+      "memory_after_mb": 1024.0,
+      "server_alive": true
+    },
+    {
+      "users": 6000,
+      "result": {
+        "actions_per_s": 1911.8333333333333,
+        "all": {
+          "count": 110650,
+          "max_ms": 428.756,
+          "p50_ms": 7.997,
+          "p95_ms": 303.231,
+          "p99_ms": 375.876,
+          "req_s": 3688.3333333333335
+        },
+        "duration_s": 30,
+        "edit_pct": 5,
+        "endpoint": null,
+        "error_samples": [],
+        "errors": 0,
+        "kinds": {
+          "contact": {
+            "count": 17165,
+            "max_ms": 403.296,
+            "p50_ms": 62.352,
+            "p95_ms": 331.586,
+            "p99_ms": 387.462,
+            "req_s": 572.1666666666666
+          },
+          "letters": {
+            "count": 5943,
+            "max_ms": 407.224,
+            "p50_ms": 5.876,
+            "p95_ms": 290.511,
+            "p99_ms": 368.37,
+            "req_s": 198.1
+          },
+          "list": {
+            "count": 26020,
+            "max_ms": 428.756,
+            "p50_ms": 43.307,
+            "p95_ms": 327.217,
+            "p99_ms": 385.288,
+            "req_s": 867.3333333333334
+          },
+          "search": {
+            "count": 26139,
+            "max_ms": 411.004,
+            "p50_ms": 0.544,
+            "p95_ms": 270.423,
+            "p99_ms": 358.387,
+            "req_s": 871.3
+          },
+          "search-letters": {
+            "count": 26139,
+            "max_ms": 405.651,
+            "p50_ms": 0.216,
+            "p95_ms": 268.32,
+            "p99_ms": 355.927,
+            "req_s": 871.3
+          },
+          "stats": {
+            "count": 3161,
+            "max_ms": 407.221,
+            "p50_ms": 49.969,
+            "p95_ms": 323.643,
+            "p99_ms": 384.903,
+            "req_s": 105.36666666666666
+          },
+          "tags": {
+            "count": 3161,
+            "max_ms": 405.529,
+            "p50_ms": 47.48,
+            "p95_ms": 321.151,
+            "p99_ms": 382.51,
+            "req_s": 105.36666666666666
+          },
+          "write": {
+            "count": 2922,
+            "max_ms": 21.389,
+            "p50_ms": 0.653,
+            "p95_ms": 1.177,
+            "p99_ms": 6.737,
+            "req_s": 97.4
+          }
+        },
+        "not_modified": 13073,
+        "think_ms": 3000,
+        "users": 6000,
+        "warmup_s": 10
+      },
+      "cpu_cores": 4.32,
+      "background_cores": 0.68,
+      "rss_mb": 1304.2,
+      "memory_after_mb": 944.6,
+      "server_alive": true
+    }
+  ],
+  "seed": {
+    "ok": true,
+    "count": 100000,
+    "insert_ms": 3097.6,
+    "per_sec": 32283,
+    "wall_s": 3.15
+  },
+  "finished_at": "2026-09-30T15:14:05"
+}

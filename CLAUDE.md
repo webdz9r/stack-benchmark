@@ -66,7 +66,7 @@ backend/java-spring/ 7886  Java, Spring Boot (Spring MVC on Tomcat), xerial sqli
 frontend/            Vue 3 + Tailwind v4; `npm run dev` proxies /api to :7878
 loadtest/            Rust load generator (simulated users, single endpoint)
 bench/               benchmark suite: run.py, report.py, parity.py, suite/
-results/             benchmark output (git-ignored): summary.* plus one folder per backend
+results/             published reference results: summary.* plus one folder per backend (dataset, work DBs and logs git-ignored)
 logs/                bench.log: progress of every benchmark run (git-ignored; tail -f it)
 docs/requirements/   the spec
 docs/optimizing.md   how to find and fix a stack's bottlenecks

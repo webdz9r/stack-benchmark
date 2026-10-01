@@ -1,5 +1,9 @@
-# Benchmark results are machine-specific and not committed. The folder itself is
-# kept so the suite has somewhere to write; share a run's summary.html instead.
-*
-!.gitignore
-!README.md
+# The reports and their data are committed: they're the published reference
+# results (see README.md). These aren't:
+# - the generated benchmark dataset (~80 MB), rebuilt on demand
+.cache/
+# - databases used during a run
+.work/
+# - server and seeder logs, which contain absolute local paths
+*.log
+.DS_Store

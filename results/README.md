@@ -20,5 +20,18 @@ its own conditions. The summary shows them per backend, and warns when results
 aren't comparable: a different machine, profile or core budget, or a busy
 machine. `.cache/` holds the generated dataset, and is reused between runs.
 
-Everything in this folder except this README and `.gitignore` is **git-ignored**.
+## Published results
+
+The reports committed here are the **reference results**, measured on the
+maintainer's machine: an Apple M5 Max (18 cores: 6 Super, 12 Performance),
+36 GB, macOS 27.0, on AC power, with every server held to a 4-core budget.
+Each report starts with these specs. Start with [`summary.md`](summary.md),
+or download `summary.html` for the charts.
+
+Your machine will give different absolute numbers. Run the suite yourself to
+compare, then commit the reports only if you're updating the reference results
+on the same machine.
+
+Not committed: `.cache/` (the ~80 MB generated dataset), `.work/` (databases
+used during a run) and the `*.log` files, which contain absolute local paths.
 See [`bench/README.md`](../bench/README.md) for how to run the suite.

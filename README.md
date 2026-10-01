@@ -86,6 +86,12 @@ users at which p99 latency reaches 100 ms.
 | Rails (direct SQL) | ~3,000 | 18,900 req/s | 11,200 req/s | 199 MB |
 | Rails + ActiveRecord | ~1,950 | 5,700 req/s | 1,600 req/s | 199 MB |
 
+**Full results:** [`results/summary.md`](results/summary.md) has latency by user
+level, CPU, memory and single-endpoint throughput for every stack, with each
+stack's report a click away (for example [Rust](results/rust/report.md)).
+Every report starts with the machine specs. `summary.html` and each
+`report.html` have charts; download them to view.
+
 Read these as a comparison between stacks, not as server sizing: a cloud vCPU
 is slower than an M5 core. The C# and Java runs were flagged because other
 programs were busy during their low-user levels, so rerun them before quoting
@@ -217,7 +223,7 @@ backend/
 frontend/            Vue 3 + Tailwind demo UI
 loadtest/            simulated-user and single-endpoint load generator (Rust)
 bench/               benchmark suite, report renderer, parity check
-results/             benchmark reports (git-ignored)
+results/             published reference results (summary + one report per stack)
 logs/                benchmark progress log (git-ignored)
 docs/
   requirements/      the spec every backend is built from

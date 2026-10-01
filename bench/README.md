@@ -24,8 +24,10 @@ tail -f logs/bench.log                            # follow a run's progress (in 
   skipped, and the reports say so.
 - **macOS or Linux.** On Windows, use WSL.
 
-Results are machine-specific, so they're **not committed**: `results/` is
-git-ignored apart from its README. Share a run by sending its `summary.html`.
+The reports in `results/` are committed as the published reference results
+(from the maintainer's machine; see [`results/README.md`](../results/README.md)).
+Commit a new run only when updating those. The dataset cache, working databases
+and logs are git-ignored. To share your own run, send its `summary.html`.
 
 ## What a run does
 
