@@ -42,6 +42,7 @@ copy of the schema.
 | --- | --- |
 | `README.md` | you need the project goal, why SQLite, the latest results, the performance lessons, or how to use Claude to write or optimize a backend |
 | `DEVELOPER.md` | you need setup and run instructions (Docker first, native second), or the guide to tuning a deployment with this harness |
+| `CONTRIBUTING.md` | you review or prepare a pull request: the ground rules for contributions |
 | `docs/requirements/` | you build or change a backend (the spec, above) |
 | `docs/optimizing.md` | you tune a stack: the method, what to check first, profiling tools, measurement pitfalls |
 | `backend/<stack>/README.md` | you work on that stack: its settings, deviations from the spec, and an **Optimizing** section with what was already found and tried |

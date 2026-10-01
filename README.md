@@ -241,9 +241,10 @@ seed checksum, the 71 parity checks and the 42 contract checks, and the
 bottlenecks it found were real. I'd still like other people's judgment on the
 quality and functionality, especially in the stacks you know best.
 
-Open an issue or a pull request. If you suggest a performance change, include
-before and after numbers from `python3 bench/run.py --stacks <stack>`, and make
-sure it still passes the checks.
+Open an issue or a pull request; [`CONTRIBUTING.md`](CONTRIBUTING.md) has the
+ground rules (in short: same work as the spec, the checks pass, and before and
+after numbers for performance changes). The project is
+[MIT licensed](LICENSE).
 
 ## Running it
 
@@ -293,4 +294,5 @@ docs/
   plans/             what's planned next, and how Docker mode was planned
 CLAUDE.md            instructions for AI assistants working in this repo
 DEVELOPER.md         setup and usage guide: Docker first, native second, then tuning with Claude
+CONTRIBUTING.md      how to contribute; LICENSE: MIT
 ```
