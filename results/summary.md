@@ -7,56 +7,57 @@
 | **Memory** | 36.0 GB |
 | **OS** | macOS 27.0 (kernel 27.0.0, arm64) |
 | **Power** | AC power |
-| **Memory metric** | physical footprint (vmmap) |
+| **Mode** | Docker 29.2.1 (Docker Desktop, 18 CPUs / 7.7 GB for containers); each server in a container limited to 4 CPUs / 4g, load generator on the Docker network |
+| **Memory metric** | container working set (cgroup memory.current minus inactive_file) |
 
-> **Warning:** Measured while the machine was busy with other work: C#, Java (Spring Boot). Those results are noisy; rerun them on an idle machine before comparing or sharing.
+> **Warning:** Measured while the machine was busy with other work: Rust, Python, Node, Rails, Rails + ActiveRecord, Go, C#, C, Java (Spring Boot). Those results are noisy; rerun them on an idle machine before comparing or sharing.
 
 ## At a glance
 
 | Stack | Users at p99 ≈ 100 ms | Single contact req/s | List page req/s | Idle memory | Peak memory | Startup | Seed |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| [Rust](rust/report.html) | ~5,100 | 71,548 | 27,252 | 3 MB | 210 MB | 204 ms | 2.6 s |
-| [Python](python/report.html) | ~3,050 | 13,484 | 2,758 | 211 MB | 905 MB | 285 ms | 4.3 s |
-| [Node](node/report.html) | ~5,050 | 38,788 | 16,639 | 102 MB | 1.00 GB | 175 ms | 3.1 s |
-| [Rails](rails/report.html) | ~3,000 | 18,917 | 11,224 | 199 MB | 951 MB | 794 ms | 4.2 s |
-| [Rails + ActiveRecord](rails-ar/report.html) | ~1,950 | 5,719 | 1,633 | 199 MB | 960 MB | 802 ms | 42.1 s |
-| [Go](go/report.html) | ~5,500 | 55,375 | 20,110 | 4 MB | 259 MB | 235 ms | 4.6 s |
-| [C#](csharp/report.html) | ≥ 6,000 | 79,135 | 21,531 | 63 MB | 836 MB | 181 ms | 3.2 s |
-| [C](c/report.html) | ≥ 6,000 | 48,475 | 25,523 | 3 MB | 186 MB | 7.0 ms | 2.6 s |
-| [Java (Spring Boot)](java-spring/report.html) | ~5,600 | 71,837 | 17,456 | 176 MB | 1.00 GB | 879 ms | 4.1 s |
+| [Rust](rust/report.html) | ~5,250 | 35,016 | 14,450 | 4 MB | 450 MB | 16.0 ms | 2.6 s |
+| [Python](python/report.html) | ~2,050 | 5,795 | 1,399 | 228 MB | 907 MB | 836 ms | 4.4 s |
+| [Node](node/report.html) | ~4,850 | 37,997 | 14,745 | 91 MB | 1.04 GB | 155 ms | 3.0 s |
+| [Rails](rails/report.html) | ~2,850 | 15,415 | 8,404 | 116 MB | 917 MB | 674 ms | 4.5 s |
+| [Rails + ActiveRecord](rails-ar/report.html) | ~1,150 | 4,355 | 1,318 | 116 MB | 958 MB | 717 ms | 51.9 s |
+| [Go](go/report.html) | ~5,300 | 58,360 | 19,324 | 15 MB | 273 MB | 16.0 ms | 4.7 s |
+| [C#](csharp/report.html) | ≥ 6,000 | 62,127 | 17,172 | 41 MB | 379 MB | 174 ms | 3.5 s |
+| [C](c/report.html) | ≥ 6,000 | 88,013 | 26,207 | 3 MB | 177 MB | 17.0 ms | 2.7 s |
+| [Java (Spring Boot)](java-spring/report.html) | ~4,700 | 34,138 | 13,099 | 176 MB | 1.35 GB | 929 ms | 4.0 s |
 
 ## p99 latency by simulated users
 
 | Users | Rust | Python | Node | Rails | Rails + ActiveRecord | Go | C# | C | Java (Spring Boot) |
 | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| 1,000 | 11.1 ms | 11.6 ms | 11.0 ms | 23.3 ms | 45.6 ms | 11.5 ms | 11.9 ms | 10.7 ms | 11.8 ms |
-| 2,000 | 11.1 ms | 19.8 ms | 10.9 ms | 43.7 ms | 103 ms | 11.0 ms | 10.4 ms | 10.4 ms | 13.8 ms |
-| 3,000 | 13.1 ms | 50.9 ms | 14.1 ms | 88.1 ms | 1,216 ms | 14.5 ms | 9.8 ms | 12.5 ms | 14.8 ms |
-| 4,000 | 26.8 ms | 752 ms | 31.7 ms | 859 ms | 2,257 ms | 29.3 ms | 10.2 ms | 20.1 ms | 31.5 ms |
-| 5,000 | 57.8 ms | 1,571 ms | 80.2 ms | 2,587 ms | — | 68.7 ms | 11.7 ms | 43.5 ms | 61.2 ms |
-| 6,000 | 486 ms | 3,341 ms | 376 ms | — | — | 133 ms | 14.7 ms | 76.7 ms | 127 ms |
+| 1,000 | 10.3 ms | 11.0 ms | 10.8 ms | 23.7 ms | 34.8 ms | 11.1 ms | 12.4 ms | 10.5 ms | 11.8 ms |
+| 2,000 | 9.7 ms | 32.3 ms | 10.1 ms | 30.9 ms | 437 ms | 10.3 ms | 10.1 ms | 9.8 ms | 11.0 ms |
+| 3,000 | 11.2 ms | 1,728 ms | 12.2 ms | 113 ms | 1,709 ms | 12.8 ms | 9.8 ms | 11.4 ms | 14.3 ms |
+| 4,000 | 20.0 ms | 3,206 ms | 30.2 ms | 1,064 ms | 3,064 ms | 25.5 ms | 9.6 ms | 19.3 ms | 36.6 ms |
+| 5,000 | 52.3 ms | — | 113 ms | 1,907 ms | — | 64.8 ms | 13.3 ms | 36.8 ms | 130 ms |
+| 6,000 | 243 ms | — | 500 ms | 2,612 ms | — | 191 ms | 20.4 ms | 72.3 ms | 282 ms |
 
 ## CPU cores used
 
 | Users | Rust | Python | Node | Rails | Rails + ActiveRecord | Go | C# | C | Java (Spring Boot) |
 | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| 1,000 | 1.04 | 1.42 | 1.11 | 1.34 | 2.06 | 1.09 | 0.85 | 1.03 | 1.14 |
-| 2,000 | 1.65 | 3.08 | 1.74 | 2.51 | 3.69 | 1.66 | 1.29 | 1.61 | 1.80 |
-| 3,000 | 2.27 | 4.18 | 2.40 | 3.63 | 4.02 | 2.22 | 1.87 | 2.22 | 2.36 |
-| 4,000 | 2.81 | 10.84 | 3.06 | 4.03 | 4.02 | 2.74 | 2.30 | 2.79 | 2.99 |
-| 5,000 | 3.41 | 14.85 | 3.84 | 3.98 | — | 3.23 | 3.00 | 3.40 | 3.55 |
-| 6,000 | 4.07 | 14.72 | 4.32 | — | — | 3.69 | 3.49 | 4.31 | 4.10 |
+| 1,000 | 0.98 | 1.47 | 1.06 | 1.28 | 2.09 | 1.01 | 0.77 | 0.99 | 1.12 |
+| 2,000 | 1.50 | 2.65 | 1.64 | 2.38 | 3.96 | 1.48 | 1.18 | 1.51 | 1.71 |
+| 3,000 | 2.02 | 4.00 | 2.21 | 3.56 | 3.99 | 1.98 | 1.57 | 2.00 | 2.31 |
+| 4,000 | 2.54 | 4.00 | 2.80 | 3.96 | 3.98 | 2.45 | 1.91 | 2.51 | 2.96 |
+| 5,000 | 3.09 | — | 3.59 | 3.97 | — | 2.94 | 2.71 | 2.98 | 3.62 |
+| 6,000 | 3.69 | — | 3.90 | 3.96 | — | 3.46 | 3.17 | 3.45 | 3.92 |
 
 ## Single endpoints (requests/second)
 
 | Request | Rust | Python | Node | Rails | Rails + ActiveRecord | Go | C# | C | Java (Spring Boot) |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| Single contact | 71,548 | 13,484 | 38,788 | 18,917 | 5,719 | 55,375 | 79,135 | 48,475 | 71,837 |
-| List page 1 (uncached) | 27,252 | 2,758 | 16,639 | 11,224 | 1,633 | 20,110 | 21,531 | 25,523 | 17,456 |
-| List page at offset 55,000 | 5,297 | 3,476 | 5,752 | 4,324 | 1,432 | 5,194 | 4,926 | 5,200 | 4,950 |
-| Search `smith` (cached) | 70,403 | 19,407 | 20,635 | 18,602 | 18,363 | 89,986 | 67,825 | 64,301 | 80,737 |
-| A–Z index (cached) | 115,735 | 26,281 | 44,729 | 20,629 | 20,287 | 150,869 | 121,995 | 136,758 | 123,330 |
-| Stats (cached) | 133,054 | 33,646 | 57,754 | 21,864 | 21,497 | 165,132 | 131,628 | 154,286 | 134,431 |
+| Single contact | 35,016 | 5,795 | 37,997 | 15,415 | 4,355 | 58,360 | 62,127 | 88,013 | 34,138 |
+| List page 1 (uncached) | 14,450 | 1,399 | 14,745 | 8,404 | 1,318 | 19,324 | 17,172 | 26,207 | 13,099 |
+| List page at offset 55,000 | 5,730 | 1,309 | 5,141 | 3,843 | 1,146 | 5,225 | 3,835 | 5,279 | 4,666 |
+| Search `smith` (cached) | 78,446 | 15,818 | 20,283 | 13,876 | 13,390 | 78,616 | 64,145 | 65,056 | 40,913 |
+| A–Z index (cached) | 139,121 | 18,448 | 52,983 | 15,261 | 15,414 | 156,978 | 106,113 | 171,226 | 103,136 |
+| Stats (cached) | 184,112 | 20,626 | 70,866 | 16,743 | 16,660 | 218,021 | 146,383 | 263,389 | 147,569 |
 
 ## Stacks and verification
 
@@ -76,15 +77,15 @@
 
 | Stack | Measured | Profile | Core budget | Machine | Load | Commit |
 | --- | --- | --- | --- | --- | --- | --- |
-| Rust | 2026-09-30 12:29:21 | standard | 4 | Apple M5 Max | quiet | uncommitted |
-| Python | 2026-09-30 15:35:51 | standard | 4 | Apple M5 Max | quiet | uncommitted |
-| Node | 2026-09-30 15:07:23 | standard | 4 | Apple M5 Max | quiet | uncommitted |
-| Rails | 2026-09-30 20:35:39 | standard | 4 | Apple M5 Max | quiet | uncommitted |
-| Rails + ActiveRecord | 2026-09-30 20:26:12 | standard | 4 | Apple M5 Max | quiet | uncommitted |
-| Go | 2026-09-30 11:09:21 | standard | 4 | Apple M5 Max | quiet | uncommitted |
-| C# | 2026-09-30 13:24:03 | standard | 4 | Apple M5 Max | busy ⚠ | uncommitted |
-| C | 2026-09-30 11:37:20 | standard | 4 | Apple M5 Max | quiet | uncommitted |
-| Java (Spring Boot) | 2026-09-30 19:41:12 | standard | 4 | Apple M5 Max | busy ⚠ | uncommitted |
+| Rust | 2026-09-30 22:32:03 | standard (Docker) | 4 | Apple M5 Max | busy ⚠ | 92b273d |
+| Python | 2026-09-30 22:51:06 | standard (Docker) | 4 | Apple M5 Max | busy ⚠ | 92b273d |
+| Node | 2026-09-30 23:15:32 | standard (Docker) | 4 | Apple M5 Max | busy ⚠ | 92b273d |
+| Rails | 2026-09-30 23:39:34 | standard (Docker) | 4 | Apple M5 Max | busy ⚠ | 92b273d |
+| Rails + ActiveRecord | 2026-09-30 23:49:08 | standard (Docker) | 4 | Apple M5 Max | busy ⚠ | 92b273d |
+| Go | 2026-09-30 23:58:26 | standard (Docker) | 4 | Apple M5 Max | busy ⚠ | 92b273d |
+| C# | 2026-10-01 00:05:35 | standard (Docker) | 4 | Apple M5 Max | busy ⚠ | 92b273d |
+| C | 2026-10-01 00:26:03 | standard (Docker) | 4 | Apple M5 Max | busy ⚠ | 92b273d |
+| Java (Spring Boot) | 2026-10-01 00:39:49 | standard (Docker) | 4 | Apple M5 Max | busy ⚠ | 92b273d |
 
 ## Method
 

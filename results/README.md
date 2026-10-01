@@ -1,7 +1,8 @@
 # Results
 
 `bench/run.py` writes here. Each backend has **one current result**, and
-rerunning a backend replaces it:
+rerunning a backend replaces it. Docker mode (the default) writes to this
+folder; native mode (`--mode native`) writes the same layout to `native/`.
 
 ```
 results/
@@ -13,6 +14,7 @@ results/
     report.md
     result.json  its measurements, plus the machine, profile, core budget, date and background load
     ramp-<users>.json, *.log   raw load-test output and logs
+  native/        the same, from native-mode runs
 ```
 
 Backends are often measured at different times, so each `result.json` records
@@ -22,8 +24,8 @@ machine. `.cache/` holds the generated dataset, and is reused between runs.
 
 ## Published results
 
-The reports committed here are the **reference results**, measured on the
-maintainer's machine: an Apple M5 Max (18 cores: 6 Super, 12 Performance),
+The reports committed here (Docker mode, and native mode in `native/`) are the
+**reference results**, measured on the maintainer's machine: an Apple M5 Max (18 cores: 6 Super, 12 Performance),
 36 GB, macOS 27.0, on AC power, with every server held to a 4-core budget.
 Each report starts with these specs. Start with [`summary.md`](summary.md),
 or download `summary.html` for the charts.

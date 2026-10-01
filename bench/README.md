@@ -4,11 +4,16 @@ Run every backend in this repo, or just the ones you care about, under identical
 conditions on your own machine. You get a report per backend, plus a consolidated
 comparison, as Markdown and as self-contained HTML files you can share.
 
+Stacks run in **Docker by default** (each in its own container, held to the
+same CPU and memory limits). `--mode native` runs them with their own
+toolchains on your machine instead.
+
 ```sh
-python3 bench/run.py --list                       # registered stacks, and whether their tools are installed
-python3 bench/run.py                              # every stack, standard profile (~6 min per stack)
+python3 bench/run.py --list                       # registered stacks, and whether they can run
+python3 bench/run.py                              # every stack in Docker, standard profile (~6 min per stack)
 python3 bench/run.py --stacks go,rust             # only these stacks
 python3 bench/run.py --profile quick              # smoke run (~3 min per stack)
+python3 bench/run.py --mode native               # every stack with its local toolchain (results/native/)
 open results/summary.html                         # the comparison; results/<stack>/report.html for detail
 tail -f logs/bench.log                            # follow a run's progress (in another terminal)
 ```
@@ -16,16 +21,20 @@ tail -f logs/bench.log                            # follow a run's progress (in 
 ## Requirements
 
 - **Python 3.10+.** The runner uses only the standard library.
-- **A Rust toolchain (`cargo`).** The load generator (`loadtest/`) and the
-  reference server (`backend/rust/`) are Rust. The reference builds the shared
-  dataset and answers the parity check.
-- **The toolchain of each stack you want to run:** Go, .NET 10, Node 26, `uv` for
-  Python, and Ruby 4.0 via `bundle` for Rails. A stack whose tools are missing is
-  skipped, and the reports say so.
+- **Docker** (the default mode): Docker Desktop or Docker Engine, with at least
+  `cores + 2` CPUs (6 for the default 4-core budget) and 8 GB of memory. Nothing
+  else: the images build every stack, and the load generator runs in a
+  container too.
+- **Native mode only (`--mode native`):** a Rust toolchain (`cargo`) for the
+  load generator and the reference server, plus the toolchain of each stack you
+  want to run: Go, .NET 10, JDK 27 + Maven, Node 26, `uv` for Python, Ruby 4.0
+  via `bundle` for Rails, a C compiler with libmicrohttpd and yyjson for C. A
+  stack whose tools are missing is skipped, and the reports say so.
 - **macOS or Linux.** On Windows, use WSL.
 
-The reports in `results/` are committed as the published reference results
-(from the maintainer's machine; see [`results/README.md`](../results/README.md)).
+The reports in `results/` (Docker) and `results/native/` are committed as the
+published reference results (from the maintainer's machine; see
+[`results/README.md`](../results/README.md)).
 Commit a new run only when updating those. The dataset cache, working databases
 and logs are git-ignored. To share your own run, send its `summary.html`.
 
@@ -127,19 +136,19 @@ bench/report.py`. Nothing is re-measured. To keep a separate set of results,
 for example from another machine, pass `--out <folder>` to `run.py` and
 `report.py`.
 
-## Docker mode
+## Docker mode (the default) and native mode
 
-Every stack can also run from its Docker image, so the only thing you need
-installed is Docker (plus Python 3.10+ and a Rust toolchain for the runner and
-the load generator). The rules for the images are in
+Each stack runs from its Docker image unless you pass `--mode native`. The rules
+for the images are in
 [`docs/requirements/07-containers.md`](../docs/requirements/07-containers.md).
 
 ```sh
-python3 bench/run.py --mode docker                         # every stack, standard profile
-python3 bench/run.py --mode docker --stacks go,rust --profile quick
-python3 bench/run.py --mode docker --loadgen host          # load generator on the host instead
-python3 bench/run.py --list --mode docker                  # which stacks have a docker block
-python3 bench/run.py --mode docker --wait-quiet 20         # wait for a quiet machine before each stack
+python3 bench/run.py                                       # every stack in Docker, standard profile
+python3 bench/run.py --stacks go,rust --profile quick
+python3 bench/run.py --loadgen host                        # load generator on the host instead
+python3 bench/run.py --wait-quiet 20                       # wait for a quiet machine before each stack
+python3 bench/run.py --mode native --stacks go             # native: the stack's own toolchain
+python3 bench/run.py --list --mode native                  # which native toolchains are installed
 ```
 
 `--wait-quiet MIN` works in either mode: before each stack, the runner waits
@@ -147,7 +156,8 @@ up to MIN minutes for other programs to stay under the busy threshold. macOS
 indexing and media analysis come in bursts, so checking once at the start
 isn't enough for an hour-long run.
 
-- **Results go to `results/docker/`**, never mixed with native results (CTR-15).
+- **Docker results go to `results/`, native ones to `results/native/`**, never
+  mixed (CTR-15).
   Each report shows the mode, Docker version and VM size, and each stack's base
   image and SQLite version.
 - **Each server runs with `--cpus=<cores>` and `--memory=4g`** (change it with

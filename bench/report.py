@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Rebuild the benchmark reports from the result JSON; nothing is re-measured.
 
-    python3 bench/report.py              # results/: every backend's report and the summary
-    python3 bench/report.py <folder>     # the same for another results folder (e.g. from --out)
+    python3 bench/report.py                   # results/ (Docker mode): every backend's report and the summary
+    python3 bench/report.py results/native    # native-mode results
+    python3 bench/report.py <folder>          # any other results folder (e.g. from --out)
 """
 
 import sys

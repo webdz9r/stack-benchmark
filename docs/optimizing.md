@@ -81,7 +81,7 @@ These were real bottlenecks in more than one stack.
 
 ## Run it in Docker too
 
-Docker mode (`bench/run.py --mode docker`, see
+Docker mode (the default for `bench/run.py`, see
 [07-containers.md](requirements/07-containers.md)) is a second opinion worth
 getting for every stack:
 

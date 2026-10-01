@@ -23,6 +23,9 @@ CTR list below, which is the original proposal. Changes from the plan:
   135–180k on the network: the forwarder was being measured.
 - **Phase 0 became a by-product** of the full runs: native and Docker results
   for every stack, side by side in the root README.
+- **Docker then became the default mode.** `bench/run.py` runs in Docker unless
+  given `--mode native`; Docker results live in `results/`, native ones in
+  `results/native/` (the reverse of this plan's phase 5).
 - Along the way, `backend/c/Makefile` got a fix for a race under `make -j` (two
   targets sharing one download rule), and Rails' Puma now reads `HOST`.
 

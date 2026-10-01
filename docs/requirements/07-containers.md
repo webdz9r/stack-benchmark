@@ -1,8 +1,9 @@
 # 7. Containers (Docker mode)
 
 Every stack can also be built, seeded, verified and benchmarked in a container,
-without installing its toolchain. This is **Docker mode**. Native mode stays the
-default and is unchanged. The plan this came from is
+without installing its toolchain. This is **Docker mode**, and it's the
+default: `bench/run.py` runs stacks in Docker unless given `--mode native`, which
+uses each stack's toolchain on the machine. The plan this came from is
 [`docs/plans/docker-runs.md`](../plans/docker-runs.md).
 
 The Dockerfile is part of what's being benchmarked, so these rules keep
@@ -93,9 +94,9 @@ budget, no extra tuning that native mode doesn't have.
 ## 4. Measuring in Docker mode
 
 - **CTR-15** Native and Docker results MUST never be mixed. Every result records
-  its `mode`. Docker runs write to `results/docker/` by default, so they never
-  replace a native result, and the summary warns if one report contains both
-  modes.
+  its `mode`. Docker runs write to `results/` and native runs to
+  `results/native/` by default, so one never replaces the other, and the
+  summary warns if one report contains both modes.
 - **CTR-16** CPU MUST be measured from the container's cgroup (`cpu.stat`
   `usage_usec`), and memory as `memory.current` minus `inactive_file` from
   `memory.stat` (reclaimable page cache left out, which is closest to the native
@@ -117,5 +118,5 @@ A stack that supports Docker mode passes the same checks in a container:
 - **VER-2** in Docker: `bench/parity.py` against the container (published port)
   ends `71 identical, 0 mismatched; 42/42 contract checks passed`, with the
   reference also in a container.
-- `python3 bench/run.py --mode docker --stacks <stack> --profile quick` passes
+- `python3 bench/run.py --stacks <stack> --profile quick` (Docker by default) passes
   both.

@@ -41,6 +41,7 @@ copy of the schema.
 | Doc | Read it when |
 | --- | --- |
 | `README.md` | you need the project goal, why SQLite, the latest results, the performance lessons, or how to use Claude to write or optimize a backend |
+| `DEVELOPER.md` | you need setup and run instructions (Docker first, native second), or the guide to tuning a deployment with this harness |
 | `docs/requirements/` | you build or change a backend (the spec, above) |
 | `docs/optimizing.md` | you tune a stack: the method, what to check first, profiling tools, measurement pitfalls |
 | `backend/<stack>/README.md` | you work on that stack: its settings, deviations from the spec, and an **Optimizing** section with what was already found and tried |
@@ -109,8 +110,8 @@ python3 bench/run.py                                 # all stacks, standard prof
 python3 bench/report.py                              # re-render all reports from the JSON
 tail -f logs/bench.log                               # follow a running benchmark
 
-# Docker mode (docs/requirements/07-containers.md): results go to results/docker/
-python3 bench/run.py --mode docker --stacks rust --profile quick
+# The runner uses Docker by default (results/); --mode native uses local toolchains (results/native/)
+python3 bench/run.py --mode native --stacks rust --profile quick
 docker compose --profile rust up --build                 # run one stack by hand
 ```
 
@@ -172,7 +173,8 @@ each `backend/<stack>/README.md` and its `bench.json`. Some stack-specific point
 ## Docker rules
 
 - **Never mix native and Docker numbers.** Docker runs write to
-  `results/docker/`; the reports warn if a summary mixes modes (CTR-15).
+  `results/` (Docker, the default) and `results/native/`; the reports warn if a
+  summary mixes modes (CTR-15).
 - **One base family:** every runtime image is Debian 13 slim (glibc), never
   Alpine/musl (CTR-2). Where no official Debian image exists (.NET 10, JDK 27),
   install the vendor's build on `debian:trixie-slim`.

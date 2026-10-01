@@ -75,9 +75,44 @@ so you can open any of them in a browser and use the same app.
 
 ## Results
 
-Latest run on an Apple M5 Max. Each server is limited to 4 cores, and the load
-generator runs on the same machine. **Capacity** is the number of simulated
-users at which p99 latency reaches 100 ms.
+Latest runs on an Apple M5 Max, with the load generator on the same machine.
+**Capacity** is the number of simulated users at which p99 latency reaches
+100 ms. There are two sets of numbers, one per way of running the stacks. Never
+compare a figure from one set with a figure from the other.
+
+### In Docker (the default)
+
+Each stack in its Debian 13 container, held to exactly 4 CPUs by the kernel
+(`--cpus=4`), with the load generator on the Docker network.
+
+| Stack | Capacity | Single contact | Uncached list page | Idle memory | Throttled at 5,000 users |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| C# (ASP.NET Core) | ≥ 6,000 | 62,100 req/s | 17,200 req/s | 41 MB | 1% |
+| C (libmicrohttpd) | ≥ 6,000 | 88,000 req/s | 26,200 req/s | 3 MB | 11% |
+| Go (net/http) | ~5,300 | 58,400 req/s | 19,300 req/s | 15 MB | 14% |
+| Rust (Axum) | ~5,250 | 35,000 req/s | 14,400 req/s | 4 MB | 26% |
+| Node (Fastify) | ~4,850 | 38,000 req/s | 14,700 req/s | 91 MB | 62% |
+| Java (Spring Boot) | ~4,700 | 34,100 req/s | 13,100 req/s | 176 MB | 62% |
+| Rails (direct SQL) | ~2,850 | 15,400 req/s | 8,400 req/s | 116 MB | 38% |
+| Python (FastAPI) | ~2,050 | 5,800 req/s | 1,400 req/s | 228 MB | 100% from 3,000 users |
+| Rails + ActiveRecord | ~1,150 | 4,400 req/s | 1,300 req/s | 116 MB | 57% from 2,000 users |
+
+**Throttled** is the share of 100 ms slices in which the kernel paused the
+container for going over 4 CPUs. Stacks with garbage collectors, JITs or helper
+threads (Java, Node, Rails) burst past the quota and lose tail latency even
+when their average CPU is under 4. That's the same limit a Kubernetes CPU limit
+applies, which is why Docker mode is the default.
+
+Full reports: [`results/summary.md`](results/summary.md), with each stack's
+report a click away (for example [Rust](results/rust/report.md)). These runs
+were flagged busy: macOS's own background indexing (`corespotlightd`,
+`mediaanalysisd`) kept starting while the machine sat idle overnight, so treat
+the exact numbers as noisy. The pattern held across two full runs.
+
+### Native
+
+Each stack with its own toolchain on macOS (`--mode native`), limited to 4
+cores by its runtime settings only (`GOMAXPROCS=4`, 4 workers, and so on).
 
 | Stack | Capacity | Single contact | Uncached list page | Idle memory |
 | --- | ---: | ---: | ---: | ---: |
@@ -91,53 +126,17 @@ users at which p99 latency reaches 100 ms.
 | Rails (direct SQL) | ~3,000 | 18,900 req/s | 11,200 req/s | 199 MB |
 | Rails + ActiveRecord | ~1,950 | 5,700 req/s | 1,600 req/s | 199 MB |
 
-**Full results:** [`results/summary.md`](results/summary.md) has latency by user
-level, CPU, memory and single-endpoint throughput for every stack, with each
-stack's report a click away (for example [Rust](results/rust/report.md)).
-Every report starts with the machine specs. `summary.html` and each
-`report.html` have charts; download them to view.
+Native mode's budget is softer: Python used ~11 cores at 4,000 users, which is
+why it scores higher here than in Docker (~2,050 is its honest 4-core
+capacity). Full reports: [`results/native/summary.md`](results/native/summary.md).
+The C# and Java native runs were flagged because other programs were busy
+during their low-user levels.
 
-Read these as a comparison between stacks, not as server sizing: a cloud vCPU
-is slower than an M5 core. The C# and Java runs were flagged because other
-programs were busy during their low-user levels, so rerun them before quoting
-them. Your own numbers are one command away (see [Running it](#running-it)).
-
-### In Docker
-
-The same benchmark with every stack in a Debian 13 container, held to
-`--cpus=4` by the kernel, with the load generator on the Docker network (same
-Mac, Docker Desktop). These are a separate set of numbers: never compare a
-Docker figure with a native one in the same breath.
-
-| Stack | Capacity in Docker | Native | Throttled at 5,000 users |
-| --- | ---: | ---: | ---: |
-| C# (ASP.NET Core) | ≥ 6,000 | ≥ 6,000 | 1% |
-| C (libmicrohttpd) | ≥ 6,000 | ≥ 6,000 | 11% |
-| Go (net/http) | ~5,300 | ~5,500 | 14% |
-| Rust (Axum) | ~5,250 | ~5,100 | 26% |
-| Node (Fastify) | ~4,850 | ~5,050 | 62% |
-| Java (Spring Boot) | ~4,700 | ~5,600 | 62% |
-| Rails (direct SQL) | ~2,850 | ~3,000 | 38% |
-| Python (FastAPI) | ~2,050 | ~3,050 | 100% from 3,000 users |
-| Rails + ActiveRecord | ~1,150 | ~1,950 | 57% from 2,000 users |
-
-What it shows:
-- **Docker enforces the budget; native mode doesn't fully.** Python used ~11
-  cores at 4,000 users natively. In a container it gets exactly 4, so ~2,050 is
-  its honest 4-core capacity.
-- **Bursty runtimes pay for the quota.** "Throttled" is the share of 100 ms
-  slices in which the kernel paused the container for exceeding 4 CPUs. Stacks
-  with garbage collectors, JITs or helper threads (Java, Node, Rails) burst
-  past it and lose tail latency even when their average CPU is under 4.
-- **Every stack passes the seed checksum and parity in its container.** Running
-  on Linux also exposed a real bug in the C backend that macOS had hidden
-  (see [`backend/c/README.md`](backend/c/README.md#bugs-found)).
-
-Reports: [`results/docker/summary.md`](results/docker/summary.md). These runs
-were flagged busy: macOS's own background indexing (`corespotlightd`,
-`mediaanalysisd`) kept starting while the machine was idle overnight, so treat
-the exact numbers as noisy; the pattern above held across two full runs. How
-Docker mode works: [`bench/README.md`](bench/README.md#docker-mode).
+Read both sets as a comparison between stacks, not as server sizing: a cloud
+vCPU is slower than an M5 core. Running on Linux also exposed a real bug in the
+C backend that macOS had hidden (see
+[`backend/c/README.md`](backend/c/README.md#bugs-found)). Your own numbers are
+one command away: see [`DEVELOPER.md`](DEVELOPER.md).
 
 ## What we learned about performance
 
@@ -248,44 +247,26 @@ sure it still passes the checks.
 
 ## Running it
 
+**[`DEVELOPER.md`](DEVELOPER.md) is the full guide**, from a fresh clone to
+tuning a stack with Claude. The short version needs only Docker and Python 3.10+:
+
 ```sh
-# Reference backend + UI
-cd backend/rust
-cargo run --release --bin seed -- 110000    # fake contacts
-cargo run --release                         # API + built UI on http://127.0.0.1:7878
+docker compose --profile rust up --build                 # API + UI on http://127.0.0.1:7878
+docker compose --profile rust run --rm rust seed 110000  # fill it with fake contacts
 
-cd frontend && npm install && npm run build # build the UI the backends serve
-npm run dev                                 # or hot-reload on :5173, proxying /api to :7878
-
-# Benchmarks (from the repo root)
-python3 bench/run.py --list                 # registered stacks; are their tools installed?
-python3 bench/run.py --stacks go,rust --profile quick
-python3 bench/run.py                        # every stack, standard profile (~6 min each)
-open results/summary.html                   # comparison; results/<stack>/report.html for detail
-tail -f logs/bench.log                      # follow a running benchmark
+python3 bench/run.py --stacks go,rust --profile quick     # benchmark two stacks in Docker (~3 min each)
+python3 bench/run.py                                     # every stack (~6 min each)
+open results/summary.html                                # the comparison
 ```
 
-Each stack's build and run commands, settings and notes are in its README:
-[Rust](backend/rust/README.md) · [Go](backend/go/README.md) ·
+Add `--mode native` to benchmark with each stack's own toolchain instead
+(results in `results/native/`). Each stack's README has its native build and
+run commands: [Rust](backend/rust/README.md) · [Go](backend/go/README.md) ·
 [C#](backend/csharp/README.md) · [C](backend/c/README.md) ·
 [Java](backend/java-spring/README.md) · [Node](backend/node/README.md) ·
 [Python](backend/python/README.md) · [Rails](backend/rails/README.md).
-More on the suite in [`bench/README.md`](bench/README.md).
-
-### With Docker
-
-Every stack also has a Dockerfile (Debian 13 slim, same settings as native), so
-you can run or benchmark any of them with nothing but Docker installed:
-
-```sh
-docker compose --profile rust up --build              # API + UI on http://127.0.0.1:7878
-docker compose --profile rust run --rm rust seed 110000
-python3 bench/run.py --mode docker                    # benchmark every stack in containers
-```
-
-Docker results go to `results/docker/` and are never mixed with native ones.
-The image rules are in [07-containers.md](docs/requirements/07-containers.md);
-how containers are measured is in [`bench/README.md`](bench/README.md#docker-mode).
+More on the suite in [`bench/README.md`](bench/README.md); the image rules are in
+[07-containers.md](docs/requirements/07-containers.md).
 
 ## Repository layout
 
@@ -303,7 +284,7 @@ backend/
 frontend/            Vue 3 + Tailwind demo UI
 loadtest/            simulated-user and single-endpoint load generator (Rust)
 bench/               benchmark suite, report renderer, parity check
-results/             published reference results (summary + one report per stack; docker/ for Docker mode)
+results/             published reference results: Docker (default) here, native in results/native/
 compose.yaml         run any stack in Docker by hand
 logs/                benchmark progress log (git-ignored)
 docs/
@@ -311,4 +292,5 @@ docs/
   optimizing.md      how to find and fix a stack's bottlenecks
   plans/             what's planned next, and how Docker mode was planned
 CLAUDE.md            instructions for AI assistants working in this repo
+DEVELOPER.md         setup and usage guide: Docker first, native second, then tuning with Claude
 ```

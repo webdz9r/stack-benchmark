@@ -1,15 +1,18 @@
 #!/usr/bin/env python3
 """Run the backend benchmark suite and write reports to results/.
 
-    python3 bench/run.py                          # every stack, standard profile
+By default every stack runs in its Docker container (docs/requirements/07-containers.md),
+so all you need is Docker and Python 3.10+.
+
+    python3 bench/run.py                          # every stack, standard profile, in Docker
     python3 bench/run.py --stacks go,rust         # just these stacks
     python3 bench/run.py --profile quick          # a fast smoke run
     python3 bench/run.py --list                   # show the registered stacks
-    python3 bench/run.py --mode docker            # every stack in its container (results/docker/)
+    python3 bench/run.py --mode native            # with each stack's own toolchain (results/native/)
 
-Needs Python 3.10+ and a Rust toolchain (the load generator and the reference
-server are Rust). Each stack needs its own toolchain; stacks whose tools are
-missing are skipped and reported as such. See bench/README.md.
+Native mode also needs a Rust toolchain (for the load generator) and each
+stack's toolchain; stacks whose tools are missing are skipped and reported as
+such. See bench/README.md.
 """
 
 from __future__ import annotations
@@ -34,9 +37,9 @@ def main() -> None:
     parser.add_argument("--reference", default="rust", help="stack used for the dataset and the parity check")
     parser.add_argument("--out", type=Path, help="results folder (default: results/<date>_<cpu>)")
     parser.add_argument("--notes", default="", help="free text recorded in the reports")
-    parser.add_argument("--mode", choices=("native", "docker"), default="native",
-                        help="run stacks with their native toolchains (default) or in Docker "
-                             "(docs/requirements/07-containers.md)")
+    parser.add_argument("--mode", choices=("docker", "native"), default="docker",
+                        help="run each stack in its Docker container (default; results/) or with its "
+                             "native toolchain on this machine (results/native/)")
     parser.add_argument("--loadgen", choices=("host", "network"), default="network",
                         help="docker mode: run the load generator in a container on the Docker network (default), "
                              "or on the host against published ports. On macOS, published ports go through "

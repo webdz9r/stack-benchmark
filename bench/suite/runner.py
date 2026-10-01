@@ -82,7 +82,7 @@ class Options:
     edit_pct: int = 5
     endpoint_clients: int = 50
     wait_quiet: int = 0      # minutes to wait, before each stack, for other programs to go quiet
-    mode: str = "native"     # or "docker"
+    mode: str = "docker"     # or "native"
     loadgen: str = "network"  # docker mode: "network" (a container on the network) or "host" (published ports)
     memory: str = "4g"       # docker mode: --memory per server container
 
@@ -118,10 +118,13 @@ def _base_env() -> dict:
 # ---------------------------------------------------------------- setup
 
 def build_loadtest(opts: Options) -> None:
+    """The load generator: a container image in Docker mode with the default
+    network placement (no Rust toolchain needed), a host binary otherwise."""
     log("building loadtest")
-    out = sh("cargo build --release --quiet", LOADTEST_DIR)
-    if out.returncode != 0:
-        raise SystemExit(f"loadtest build failed:\n{out.stderr}")
+    if not (opts.mode == "docker" and opts.loadgen == "network"):
+        out = sh("cargo build --release --quiet", LOADTEST_DIR)
+        if out.returncode != 0:
+            raise SystemExit(f"loadtest build failed:\n{out.stderr}")
     if opts.mode == "docker" and opts.loadgen == "network":
         out = containers.docker("build", "-q", "-f", str(LOADTEST_DIR / "Dockerfile"), "-t",
                                 containers.LOADTEST_IMAGE, str(ROOT), timeout=1800)
@@ -503,14 +506,15 @@ def run_stack(stack: Stack, reference: Stack, dataset: Path, opts: Options, run_
 # ---------------------------------------------------------------- whole run
 
 def run(stacks: list[Stack], all_stacks: list[Stack], opts: Options) -> Path:
-    """Benchmark the given stacks and rebuild the summary. Native results go to
-    results/, Docker results to results/docker/ (CTR-15), unless --out says otherwise."""
+    """Benchmark the given stacks and rebuild the summary. Docker results (the
+    default) go to results/, native results to results/native/ (CTR-15), unless
+    --out says otherwise."""
     reference = next((s for s in all_stacks if s.name == opts.reference), None)
     if reference is None:
         raise SystemExit(f"reference stack {opts.reference!r} not found")
 
     info = machine.collect()
-    root = (opts.out or (RESULTS / "docker" if opts.mode == "docker" else RESULTS)).resolve()
+    root = (opts.out or (RESULTS if opts.mode == "docker" else RESULTS / "native")).resolve()
     root.mkdir(parents=True, exist_ok=True)
     WORK.mkdir(parents=True, exist_ok=True)
 

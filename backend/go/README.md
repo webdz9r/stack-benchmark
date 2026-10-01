@@ -55,7 +55,7 @@ GOMAXPROCS=4 DB_READERS=4 ./server           # :7883
 `Dockerfile` builds this stack on Debian 13 slim with the same settings as
 native ([07-containers.md](../../docs/requirements/07-containers.md)).
 Run it with `docker compose --profile go up --build` from the repo root, or
-benchmark it with `python3 bench/run.py --mode docker --stacks go`.
+benchmark it with `python3 bench/run.py --stacks go` (Docker is the default; add `--mode native` to use the toolchain on your machine).
 
 ## Verify and benchmark
 
