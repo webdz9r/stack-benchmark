@@ -1,0 +1,23 @@
+{
+  "name": "node",
+  "label": "Node",
+  "description": "Fastify, built-in node:sqlite on worker threads",
+  "port": 7880,
+  "requires": [
+    "node",
+    "npm"
+  ],
+  "versions": [
+    "node --version"
+  ],
+  "build": [
+    "npm install --no-audit --no-fund --silent"
+  ],
+  "start": "node src/main.js",
+  "seed": "node src/seed.js {count}",
+  "env": {
+    "PORT": "{port}",
+    "DB_READERS": "{cores}"
+  },
+  "concurrency": "1 process: event loop + {cores} reader threads + 1 writer thread"
+}

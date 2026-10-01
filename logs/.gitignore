@@ -1,0 +1,5 @@
+# Benchmark logs are machine-specific and not committed; the folder is kept so
+# bench/run.py has somewhere to write. Follow a run with: tail -f logs/bench.log
+*
+!.gitignore
+!README.md

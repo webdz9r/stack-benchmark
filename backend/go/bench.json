@@ -1,0 +1,24 @@
+{
+  "name": "go",
+  "label": "Go",
+  "description": "net/http, mattn/go-sqlite3, klauspost gzip",
+  "port": 7883,
+  "requires": [
+    "go"
+  ],
+  "versions": [
+    "go version"
+  ],
+  "build": [
+    "CGO_CFLAGS=\"-O2 -g -DSQLITE_DEFAULT_MEMSTATUS=0\" go build -tags sqlite_fts5 -o server ./cmd/server",
+    "CGO_CFLAGS=\"-O2 -g -DSQLITE_DEFAULT_MEMSTATUS=0\" go build -tags sqlite_fts5 -o seed ./cmd/seed"
+  ],
+  "start": "./server",
+  "seed": "./seed {count}",
+  "env": {
+    "BIND_ADDR": "127.0.0.1:{port}",
+    "GOMAXPROCS": "{cores}",
+    "DB_READERS": "{cores}"
+  },
+  "concurrency": "1 process, GOMAXPROCS={cores}, {cores} read connections"
+}

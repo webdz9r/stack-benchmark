@@ -1,0 +1,56 @@
+[
+  {
+    "name": "rails",
+    "label": "Rails",
+    "description": "Rails 8.1 API, Puma, sqlite3 gem (direct SQL)",
+    "port": 7881,
+    "requires": [
+      "bundle"
+    ],
+    "versions": [
+      "ruby --version",
+      "bundle exec rails --version"
+    ],
+    "build": [
+      "bundle install --quiet"
+    ],
+    "start": "bundle exec puma",
+    "seed": "bin/rails runner script/seed.rb {count}",
+    "env": {
+      "RAILS_ENV": "production",
+      "SECRET_KEY_BASE_DUMMY": "1",
+      "RUBY_YJIT_ENABLE": "1",
+      "WEB_CONCURRENCY": "{cores}",
+      "RAILS_MAX_THREADS": "1",
+      "PORT": "{port}",
+      "RAILS_DATA": "raw"
+    },
+    "concurrency": "{cores} Puma workers x 1 thread"
+  },
+  {
+    "name": "rails-ar",
+    "label": "Rails + ActiveRecord",
+    "description": "Same Rails app on ActiveRecord models",
+    "port": 7882,
+    "requires": [
+      "bundle"
+    ],
+    "versions": [
+      "ruby --version",
+      "bundle exec rails --version"
+    ],
+    "build": [],
+    "start": "bundle exec puma",
+    "seed": "bin/rails runner script/seed.rb {count}",
+    "env": {
+      "RAILS_ENV": "production",
+      "SECRET_KEY_BASE_DUMMY": "1",
+      "RUBY_YJIT_ENABLE": "1",
+      "WEB_CONCURRENCY": "{cores}",
+      "RAILS_MAX_THREADS": "1",
+      "PORT": "{port}",
+      "RAILS_DATA": "activerecord"
+    },
+    "concurrency": "{cores} Puma workers x 1 thread"
+  }
+]

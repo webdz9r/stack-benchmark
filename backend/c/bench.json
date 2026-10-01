@@ -1,0 +1,13 @@
+{
+  "name": "c",
+  "label": "C",
+  "description": "libmicrohttpd, SQLite amalgamation (compiled in), yyjson, zlib",
+  "port": 7885,
+  "requires": ["make", "cc", "pkg-config", "curl"],
+  "versions": ["cc --version", "pkg-config --modversion libmicrohttpd"],
+  "build": ["make -s"],
+  "start": "./server",
+  "seed": "./seed {count}",
+  "env": {"BIND_ADDR": "127.0.0.1:{port}", "THREADS": "{cores}"},
+  "concurrency": "1 process, {cores} threads, one read connection each"
+}

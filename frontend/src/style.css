@@ -1,0 +1,82 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Young Serif", Georgia, serif;
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+
+  --color-paper: #e9edf1;      /* app background: cool card-stock grey */
+  --color-card: #ffffff;
+  --color-ink: #1b2430;        /* primary text */
+  --color-graphite: #5d6978;   /* secondary text */
+  --color-rule: #d3dae2;       /* borders, dividers */
+  --color-ledger: #c9dcef;     /* index-card ruled lines */
+  --color-margin: #c8453b;     /* index-card red header rule */
+  --color-cobalt: #2c46b0;     /* accent: links, focus, primary actions */
+  --color-cobalt-soft: #e3e8f8;
+}
+
+@layer base {
+  html, body, #app { height: 100%; }
+  body {
+    background: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-cobalt);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition: none !important; animation: none !important; }
+  }
+}
+
+@layer components {
+  /* The signature element: a contact shown as an index card. */
+  .index-card {
+    background: var(--color-card);
+    border-radius: 6px;
+    box-shadow: 0 1px 0 var(--color-rule), 0 12px 32px -18px rgb(27 36 48 / 0.35);
+  }
+  /* The red rule under an index card's heading. */
+  .card-rule { border-bottom: 2px solid var(--color-margin); }
+  .ruled {
+    background-image: repeating-linear-gradient(
+      to bottom, transparent 0, transparent calc(1.75rem - 1px),
+      var(--color-ledger) calc(1.75rem - 1px), var(--color-ledger) 1.75rem
+    );
+    line-height: 1.75rem;
+  }
+  .field-label {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-graphite);
+  }
+  .input {
+    width: 100%;
+    border: 1px solid var(--color-rule);
+    background: var(--color-card);
+    border-radius: 6px;
+    padding: 0.5rem 0.625rem;
+    font-size: 0.875rem;
+  }
+  .input:focus { outline: 2px solid var(--color-cobalt); outline-offset: -1px; border-color: transparent; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 0.375rem;
+    border-radius: 6px; padding: 0.5rem 0.875rem;
+    font-size: 0.875rem; font-weight: 500;
+    transition: background-color 120ms, color 120ms;
+  }
+  .btn-primary { background: var(--color-cobalt); color: white; }
+  .btn-primary:hover { background: #22388f; }
+  .btn-primary:disabled { opacity: 0.6; }
+  .btn-quiet { color: var(--color-ink); }
+  .btn-quiet:hover { background: var(--color-paper); }
+  .btn-danger { color: var(--color-margin); }
+  .btn-danger:hover { background: #fbeceb; }
+}

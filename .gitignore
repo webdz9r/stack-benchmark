@@ -1,0 +1,14 @@
+# OS and editor files
+.DS_Store
+.idea/
+.vscode/
+
+# Python bytecode (bench/ and backend/python/)
+__pycache__/
+*.pyc
+
+# Secrets: never commit these anywhere in the repo
+.env
+.env.*
+*.pem
+*.key

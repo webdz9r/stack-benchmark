@@ -1,0 +1,16 @@
+{
+  "name": "address-book-node",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "start": "node src/main.js",
+    "seed": "node src/seed.js"
+  },
+  "dependencies": {
+    "@fastify/compress": "^9.2.0",
+    "@fastify/static": "^10.1.5",
+    "better-sqlite3": "^13.0.3",
+    "fastify": "^5.12.5"
+  }
+}

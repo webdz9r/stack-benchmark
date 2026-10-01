@@ -1,0 +1,24 @@
+{
+  "name": "java-spring",
+  "label": "Java (Spring Boot)",
+  "description": "Spring Boot 4.1 (Spring MVC on Tomcat), JDK 27, xerial sqlite-jdbc, Jackson",
+  "port": 7886,
+  "requires": [
+    "mvn"
+  ],
+  "versions": [
+    "./run.sh --version",
+    "mvn -v"
+  ],
+  "build": [
+    "mvn -q -B package -DskipTests"
+  ],
+  "start": "./run.sh",
+  "seed": "./run.sh seed {count}",
+  "env": {
+    "BIND_ADDR": "127.0.0.1:{port}",
+    "JAVA_CPUS": "{cores}",
+    "DB_READERS": "{cores}"
+  },
+  "concurrency": "1 JVM, -XX:ActiveProcessorCount={cores}, Tomcat thread per request, {cores} read connections"
+}

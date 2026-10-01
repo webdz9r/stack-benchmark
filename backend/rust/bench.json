@@ -1,0 +1,23 @@
+{
+  "name": "rust",
+  "label": "Rust",
+  "description": "Axum, rusqlite (bundled SQLite), moka cache",
+  "port": 7878,
+  "requires": [
+    "cargo"
+  ],
+  "versions": [
+    "rustc --version"
+  ],
+  "build": [
+    "cargo build --release"
+  ],
+  "start": "./target/release/address-book",
+  "seed": "./target/release/seed {count}",
+  "env": {
+    "BIND_ADDR": "127.0.0.1:{port}",
+    "TOKIO_WORKER_THREADS": "{cores}",
+    "DB_READERS": "{cores}"
+  },
+  "concurrency": "1 process, {cores} Tokio threads, {cores} read connections"
+}

@@ -1,0 +1,7 @@
+[env]
+# libsqlite3-sys's bundled build has two defaults that put a process-wide mutex
+# on the hot path and serialize otherwise-parallel reads:
+# - memory statistics take a global mutex on every malloc/free;
+# - SQLITE_ENABLE_MEMORY_MANAGEMENT makes every connection share one page-cache
+#   group behind a global mutex taken on each page fetch (sqlite3.c, pcache1Init).
+LIBSQLITE3_FLAGS = "-DSQLITE_DEFAULT_MEMSTATUS=0 -USQLITE_ENABLE_MEMORY_MANAGEMENT"

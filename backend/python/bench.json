@@ -1,0 +1,21 @@
+{
+  "name": "python",
+  "label": "Python",
+  "description": "FastAPI, uvicorn (uvloop, httptools), sqlite3, orjson",
+  "port": 7879,
+  "requires": [
+    "uv"
+  ],
+  "versions": [
+    ".venv/bin/python --version"
+  ],
+  "build": [
+    "uv sync --quiet"
+  ],
+  "start": ".venv/bin/uvicorn app.main:app --host 127.0.0.1 --port {port} --workers {cores} --loop uvloop --http httptools --no-access-log",
+  "seed": ".venv/bin/python seed.py {count}",
+  "env": {
+    "DB_READERS": "4"
+  },
+  "concurrency": "{cores} workers x 4 threads"
+}

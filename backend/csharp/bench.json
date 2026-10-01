@@ -1,0 +1,24 @@
+{
+  "name": "csharp",
+  "label": "C#",
+  "description": "ASP.NET Core minimal APIs, Microsoft.Data.Sqlite, source-generated JSON",
+  "port": 7884,
+  "requires": [
+    "dotnet"
+  ],
+  "versions": [
+    "dotnet --version"
+  ],
+  "build": [
+    "dotnet build -c Release --nologo -v quiet --disable-build-servers"
+  ],
+  "start": "dotnet bin/Release/net10.0/AddressBook.dll",
+  "seed": "dotnet bin/Release/net10.0/AddressBook.dll seed {count}",
+  "env": {
+    "BIND_ADDR": "127.0.0.1:{port}",
+    "DOTNET_PROCESSOR_COUNT": "{cores}",
+    "DB_READERS": "{cores}",
+    "DOTNET_CLI_TELEMETRY_OPTOUT": "1"
+  },
+  "concurrency": "1 process, DOTNET_PROCESSOR_COUNT={cores}, {cores} read connections"
+}

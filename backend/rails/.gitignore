@@ -1,0 +1,24 @@
+# Each stack's database copy
+/data/
+
+# Rails secrets. The app runs with SECRET_KEY_BASE_DUMMY=1 and doesn't use
+# encrypted credentials, so none of these belong in the repo.
+/config/master.key
+/config/credentials.yml.enc
+/config/credentials/*.key
+
+# Logs, temp files and local storage
+/log/*
+!/log/.keep
+/tmp/*
+!/tmp/.keep
+!/tmp/pids/
+/tmp/pids/*
+!/tmp/pids/.keep
+!/tmp/storage/
+/tmp/storage/*
+!/tmp/storage/.keep
+/storage/*
+!/storage/.keep
+
+/.bundle
