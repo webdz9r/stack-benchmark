@@ -9,6 +9,17 @@ two data layers in one app, chosen by `RAILS_DATA`:
   associations, scopes, `includes` and callbacks, written the usual Rails way.
   It's the one stack the spec allows to use an ORM (DB-15).
 
+Everything else is the same code for both: routes, controllers, validation
+(`ContactInput`), the response cache, gzip, the Puma setup and the seeder. Only
+the store behind the controllers changes, so the gap between the two results is
+the cost of ActiveRecord itself.
+
+The benchmark treats them as two stacks from this one folder: `bench.json` lists
+`rails` (port 7881, `RAILS_DATA=raw`) and `rails-ar` (port 7882,
+`RAILS_DATA=activerecord`). In Docker, one image serves both, `RAILS_DATA` picks
+the variant at run time, and `compose.yaml` has a profile for each (`rails`,
+`rails-ar`).
+
 ## Run
 
 ```sh
@@ -24,7 +35,8 @@ RAILS_DATA=activerecord DATABASE_PATH=data/address-book-ar.db PORT=7882 RAILS_EN
 | Variable | Default | |
 | --- | --- | --- |
 | `DATABASE_PATH` | `data/address-book.db` | SQLite file (both data layers) |
-| `PORT` | `7881` | listen port (bound to 127.0.0.1) |
+| `HOST` | `127.0.0.1` | listen address; containers set `0.0.0.0` (ARCH-6, CTR-10) |
+| `PORT` | `7881` | listen port |
 | `STATIC_DIR` | `../../frontend/dist` | built frontend (Rails' public folder) |
 | `RAILS_DATA` | `raw` | `raw` or `activerecord` |
 | `WEB_CONCURRENCY` | `4` | Puma worker processes (the core budget) |
