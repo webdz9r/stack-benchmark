@@ -17,5 +17,14 @@
   "env": {
     "DB_READERS": "4"
   },
-  "concurrency": "{cores} workers x 4 threads"
+  "concurrency": "{cores} workers x 4 threads",
+  "docker": {
+    "start": "serve",
+    "seed": "seed {count}",
+    "env": {
+      "UVICORN_HOST": "0.0.0.0",
+      "UVICORN_PORT": "{port}",
+      "UVICORN_WORKERS": "{cores}"
+    }
+  }
 }

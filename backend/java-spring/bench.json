@@ -20,5 +20,12 @@
     "JAVA_CPUS": "{cores}",
     "DB_READERS": "{cores}"
   },
-  "concurrency": "1 JVM, -XX:ActiveProcessorCount={cores}, Tomcat thread per request, {cores} read connections"
+  "concurrency": "1 JVM, -XX:ActiveProcessorCount={cores}, Tomcat thread per request, {cores} read connections",
+  "docker": {
+    "start": "serve",
+    "seed": "seed {count}",
+    "env": {
+      "BIND_ADDR": "0.0.0.0:{port}"
+    }
+  }
 }

@@ -1,0 +1,152 @@
+# Run any stack in Docker by hand (docs/requirements/07-containers.md).
+# Generated from each backend's bench.json (native env + its docker block, 4-core budget).
+# The benchmark runner doesn't use this file: it drives docker directly, so its
+# budget follows --cores (bench/README.md, "Docker mode").
+#
+#   docker compose --profile rust up --build            # API + UI on http://127.0.0.1:7878
+#   docker compose --profile rust run --rm rust seed 110000
+#   docker compose --profile all up --build             # every stack, each on its usual port
+
+x-budget: &budget
+  cpus: 4
+  mem_limit: 4g
+
+services:
+  rust:
+    image: stack-benchmark-rust
+    build: { context: ., dockerfile: backend/rust/Dockerfile }
+    profiles: ["rust", "all"]
+    ports: ["127.0.0.1:7878:7878"]
+    environment:
+      DATABASE_PATH: /app/backend/rust/data/address-book.db
+      BIND_ADDR: "0.0.0.0:7878"
+      TOKIO_WORKER_THREADS: "4"
+      DB_READERS: "4"
+    volumes: ["rust-data:/app/backend/rust/data"]
+    <<: *budget
+
+  python:
+    image: stack-benchmark-python
+    build: { context: ., dockerfile: backend/python/Dockerfile }
+    profiles: ["python", "all"]
+    ports: ["127.0.0.1:7879:7879"]
+    environment:
+      DATABASE_PATH: /app/backend/python/data/address-book.db
+      DB_READERS: "4"
+      UVICORN_HOST: "0.0.0.0"
+      UVICORN_PORT: "7879"
+      UVICORN_WORKERS: "4"
+    volumes: ["python-data:/app/backend/python/data"]
+    <<: *budget
+
+  node:
+    image: stack-benchmark-node
+    build: { context: ., dockerfile: backend/node/Dockerfile }
+    profiles: ["node", "all"]
+    ports: ["127.0.0.1:7880:7880"]
+    environment:
+      DATABASE_PATH: /app/backend/node/data/address-book.db
+      PORT: "7880"
+      DB_READERS: "4"
+      HOST: "0.0.0.0"
+    volumes: ["node-data:/app/backend/node/data"]
+    <<: *budget
+
+  rails:
+    image: stack-benchmark-rails
+    build: { context: ., dockerfile: backend/rails/Dockerfile }
+    profiles: ["rails", "all"]
+    ports: ["127.0.0.1:7881:7881"]
+    environment:
+      DATABASE_PATH: /app/backend/rails/data/address-book.db
+      RAILS_ENV: "production"
+      SECRET_KEY_BASE_DUMMY: "1"
+      RUBY_YJIT_ENABLE: "1"
+      WEB_CONCURRENCY: "4"
+      RAILS_MAX_THREADS: "1"
+      PORT: "7881"
+      RAILS_DATA: "raw"
+      HOST: "0.0.0.0"
+    volumes: ["rails-data:/app/backend/rails/data"]
+    <<: *budget
+
+  rails-ar:
+    image: stack-benchmark-rails
+    build: { context: ., dockerfile: backend/rails/Dockerfile }
+    profiles: ["rails-ar", "all"]
+    ports: ["127.0.0.1:7882:7882"]
+    environment:
+      DATABASE_PATH: /app/backend/rails/data/address-book.db
+      RAILS_ENV: "production"
+      SECRET_KEY_BASE_DUMMY: "1"
+      RUBY_YJIT_ENABLE: "1"
+      WEB_CONCURRENCY: "4"
+      RAILS_MAX_THREADS: "1"
+      PORT: "7882"
+      RAILS_DATA: "activerecord"
+      HOST: "0.0.0.0"
+    volumes: ["rails-ar-data:/app/backend/rails/data"]
+    <<: *budget
+
+  go:
+    image: stack-benchmark-go
+    build: { context: ., dockerfile: backend/go/Dockerfile }
+    profiles: ["go", "all"]
+    ports: ["127.0.0.1:7883:7883"]
+    environment:
+      DATABASE_PATH: /app/backend/go/data/address-book.db
+      BIND_ADDR: "0.0.0.0:7883"
+      GOMAXPROCS: "4"
+      DB_READERS: "4"
+    volumes: ["go-data:/app/backend/go/data"]
+    <<: *budget
+
+  csharp:
+    image: stack-benchmark-csharp
+    build: { context: ., dockerfile: backend/csharp/Dockerfile }
+    profiles: ["csharp", "all"]
+    ports: ["127.0.0.1:7884:7884"]
+    environment:
+      DATABASE_PATH: /app/backend/csharp/data/address-book.db
+      BIND_ADDR: "0.0.0.0:7884"
+      DOTNET_PROCESSOR_COUNT: "4"
+      DB_READERS: "4"
+      DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+    volumes: ["csharp-data:/app/backend/csharp/data"]
+    <<: *budget
+
+  c:
+    image: stack-benchmark-c
+    build: { context: ., dockerfile: backend/c/Dockerfile }
+    profiles: ["c", "all"]
+    ports: ["127.0.0.1:7885:7885"]
+    environment:
+      DATABASE_PATH: /app/backend/c/data/address-book.db
+      BIND_ADDR: "0.0.0.0:7885"
+      THREADS: "4"
+    volumes: ["c-data:/app/backend/c/data"]
+    <<: *budget
+
+  java-spring:
+    image: stack-benchmark-java-spring
+    build: { context: ., dockerfile: backend/java-spring/Dockerfile }
+    profiles: ["java-spring", "all"]
+    ports: ["127.0.0.1:7886:7886"]
+    environment:
+      DATABASE_PATH: /app/backend/java-spring/data/address-book.db
+      BIND_ADDR: "0.0.0.0:7886"
+      JAVA_CPUS: "4"
+      DB_READERS: "4"
+    volumes: ["java-spring-data:/app/backend/java-spring/data"]
+    <<: *budget
+
+volumes:
+  rust-data:
+  python-data:
+  node-data:
+  rails-data:
+  rails-ar-data:
+  go-data:
+  csharp-data:
+  c-data:
+  java-spring-data:

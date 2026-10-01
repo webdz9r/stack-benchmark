@@ -127,6 +127,61 @@ bench/report.py`. Nothing is re-measured. To keep a separate set of results,
 for example from another machine, pass `--out <folder>` to `run.py` and
 `report.py`.
 
+## Docker mode
+
+Every stack can also run from its Docker image, so the only thing you need
+installed is Docker (plus Python 3.10+ and a Rust toolchain for the runner and
+the load generator). The rules for the images are in
+[`docs/requirements/07-containers.md`](../docs/requirements/07-containers.md).
+
+```sh
+python3 bench/run.py --mode docker                         # every stack, standard profile
+python3 bench/run.py --mode docker --stacks go,rust --profile quick
+python3 bench/run.py --mode docker --loadgen host          # load generator on the host instead
+python3 bench/run.py --list --mode docker                  # which stacks have a docker block
+python3 bench/run.py --mode docker --wait-quiet 20         # wait for a quiet machine before each stack
+```
+
+`--wait-quiet MIN` works in either mode: before each stack, the runner waits
+up to MIN minutes for other programs to stay under the busy threshold. macOS
+indexing and media analysis come in bursts, so checking once at the start
+isn't enough for an hour-long run.
+
+- **Results go to `results/docker/`**, never mixed with native results (CTR-15).
+  Each report shows the mode, Docker version and VM size, and each stack's base
+  image and SQLite version.
+- **Each server runs with `--cpus=<cores>` and `--memory=4g`** (change it with
+  `--memory`), plus its usual budget variables from `bench.json`. The database
+  sits on a named volume, never a bind mount.
+- **The load generator runs in a container on the Docker network by default**
+  (`--loadgen network`). On macOS, `--loadgen host` sends every request through
+  Docker Desktop's port forwarder, which capped Rust's cached endpoints at about
+  45k req/s against 135–180k on the network. The forwarder is measured instead
+  of the server.
+- **CPU and memory come from the container's cgroup:** `cpu.stat` for CPU, and
+  `memory.current` minus `inactive_file` for memory (page cache left out). On
+  macOS the report also shows `docker_host_cores`: the host CPU of Docker
+  Desktop's VM and port forwarder, which includes the container, the load
+  generator (network mode) and Docker's own overhead.
+- **The parity reference runs in Docker too,** so both sides pay the same
+  overhead.
+- **Throttling is recorded.** `--cpus` is enforced in 100 ms slices; a server
+  that bursts past its quota is paused for the rest of the slice, which shows
+  up as tail latency even when its average CPU is under the limit. Each level
+  records `throttled_pct` (slices in which it was paused) and
+  `throttled_ms_per_s`, and the report shows them next to CPU.
+- **Native mode's budget is softer.** Natively, the budget is only the runtime's
+  own settings, and some stacks spread past it (Python reached ~11 cores at
+  4,000 users). In Docker, the cgroup holds every stack to exactly `--cpus`, so
+  Docker numbers are the stricter 4-core comparison.
+- **Requirements:** give Docker at least `cores + 2` CPUs (the runner warns
+  otherwise), and stop other containers before a publishable run: they share the
+  VM. Images must match the host's architecture; the runner refuses to benchmark
+  under emulation.
+
+`compose.yaml` at the repo root runs any stack by hand (`docker compose
+--profile rust up --build`); the runner doesn't use it.
+
 ## Adding a backend
 
 1. Implement it in `backend/<stack>/` from the spec in

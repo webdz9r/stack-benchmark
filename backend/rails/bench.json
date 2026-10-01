@@ -25,7 +25,14 @@
       "PORT": "{port}",
       "RAILS_DATA": "raw"
     },
-    "concurrency": "{cores} Puma workers x 1 thread"
+    "concurrency": "{cores} Puma workers x 1 thread",
+    "docker": {
+      "start": "serve",
+      "seed": "seed {count}",
+      "env": {
+        "HOST": "0.0.0.0"
+      }
+    }
   },
   {
     "name": "rails-ar",
@@ -51,6 +58,13 @@
       "PORT": "{port}",
       "RAILS_DATA": "activerecord"
     },
-    "concurrency": "{cores} Puma workers x 1 thread"
+    "concurrency": "{cores} Puma workers x 1 thread",
+    "docker": {
+      "start": "serve",
+      "seed": "seed {count}",
+      "env": {
+        "HOST": "0.0.0.0"
+      }
+    }
   }
 ]

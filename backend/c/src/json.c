@@ -50,7 +50,12 @@ void buf_free(buf_t *b) {
 }
 
 char *buf_take(buf_t *b, size_t *len) {
-    if (!b->data) buf_reserve(b, 0);
+    if (!b->data) {
+        // Nothing was written: hand back "" rather than fresh, unterminated memory.
+        // (macOS often zeroes a new allocation, which hid this; glibc doesn't.)
+        buf_reserve(b, 0);
+        b->data[0] = '\0';
+    }
     char *p = b->data;
     *len = b->len;
     b->data = NULL;

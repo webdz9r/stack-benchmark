@@ -56,6 +56,13 @@ DOTNET_PROCESSOR_COUNT=4 DB_READERS=4 dotnet bin/Release/net10.0/AddressBook.dll
   `Db.Read`; `ThreadPool.ThreadCount`/`PendingWorkItemCount`. See
   [`docs/optimizing.md`](../../docs/optimizing.md).
 
+## Docker
+
+`Dockerfile` builds this stack on Debian 13 slim with the same settings as
+native ([07-containers.md](../../docs/requirements/07-containers.md)). There's no Debian-based .NET 10 image, so the runtime is Microsoft's ASP.NET Core build installed on `debian:trixie-slim`.
+Run it with `docker compose --profile csharp up --build` from the repo root, or
+benchmark it with `python3 bench/run.py --mode docker --stacks csharp`.
+
 ## Verify and benchmark
 
 ```sh

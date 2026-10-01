@@ -5,6 +5,7 @@
     python3 bench/run.py --stacks go,rust         # just these stacks
     python3 bench/run.py --profile quick          # a fast smoke run
     python3 bench/run.py --list                   # show the registered stacks
+    python3 bench/run.py --mode docker            # every stack in its container (results/docker/)
 
 Needs Python 3.10+ and a Rust toolchain (the load generator and the reference
 server are Rust). Each stack needs its own toolchain; stacks whose tools are
@@ -33,6 +34,16 @@ def main() -> None:
     parser.add_argument("--reference", default="rust", help="stack used for the dataset and the parity check")
     parser.add_argument("--out", type=Path, help="results folder (default: results/<date>_<cpu>)")
     parser.add_argument("--notes", default="", help="free text recorded in the reports")
+    parser.add_argument("--mode", choices=("native", "docker"), default="native",
+                        help="run stacks with their native toolchains (default) or in Docker "
+                             "(docs/requirements/07-containers.md)")
+    parser.add_argument("--loadgen", choices=("host", "network"), default="network",
+                        help="docker mode: run the load generator in a container on the Docker network (default), "
+                             "or on the host against published ports. On macOS, published ports go through "
+                             "Docker Desktop's port forwarder, which caps fast endpoints well below the server")
+    parser.add_argument("--wait-quiet", type=int, default=0, metavar="MIN",
+                        help="before each stack, wait up to MIN minutes for other programs to go quiet")
+    parser.add_argument("--memory", default="4g", help="docker mode: memory limit per server container (default 4g)")
     for step in ("build", "parity", "conformance", "endpoints", "ramp", "seed"):
         parser.add_argument(f"--skip-{step}", action="store_true", help=f"skip the {step} step")
     parser.add_argument("--list", action="store_true", help="list registered stacks and exit")
@@ -41,8 +52,10 @@ def main() -> None:
     all_stacks = stacks.discover()
     if args.list:
         for s in all_stacks:
-            missing = s.missing_tools()
+            missing = s.missing_tools(args.mode)
             state = f"missing {', '.join(missing)}" if missing else "ready"
+            if args.mode == "docker" and not s.docker:
+                state = "no docker block"
             print(f"{s.name:<10} :{s.port}  {s.label:<22} {state:<18} {s.dir.relative_to(stacks.ROOT)}")
         return
 
@@ -61,6 +74,7 @@ def main() -> None:
     opts = runner.Options(
         profile=profile, cores=args.cores, dataset=args.dataset, reference=args.reference,
         stop_p99_ms=args.stop_p99, out=args.out, notes=args.notes,
+        mode=args.mode, loadgen=args.loadgen, memory=args.memory, wait_quiet=args.wait_quiet,
         build=not args.skip_build, parity=not args.skip_parity, conformance=not args.skip_conformance,
         endpoints=not args.skip_endpoints, ramp=not args.skip_ramp, seed=not args.skip_seed,
     )

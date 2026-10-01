@@ -17,6 +17,15 @@ public class Application {
     private static final Logger log = LoggerFactory.getLogger(Application.class);
 
     public static void main(String[] args) throws Exception {
+        if (args.length > 0 && args[0].equals("sqlite-version")) {
+            // The SQLite this driver links; Docker images record it (CTR-7).
+            try (var conn = java.sql.DriverManager.getConnection("jdbc:sqlite::memory:");
+                 var rs = conn.createStatement().executeQuery("select sqlite_version()")) {
+                rs.next();
+                System.out.println(rs.getString(1));
+            }
+            return;
+        }
         Config config = Config.fromEnv();
         if (args.length > 0 && args[0].equals("seed")) {
             Seeder.run(config, args);

@@ -8,7 +8,8 @@
 workers Integer(ENV.fetch("WEB_CONCURRENCY", 4))
 threads_count = Integer(ENV.fetch("RAILS_MAX_THREADS", 1))
 threads threads_count, threads_count
-bind "tcp://127.0.0.1:#{ENV.fetch("PORT", 7881)}"
+# HOST defaults to loopback; containers set HOST=0.0.0.0 (ARCH-6, CTR-10).
+bind "tcp://#{ENV.fetch("HOST", "127.0.0.1")}:#{ENV.fetch("PORT", 7881)}"
 environment ENV.fetch("RAILS_ENV", "production")
 
 # Load the app once, then fork: workers share its memory copy-on-write.

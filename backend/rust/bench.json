@@ -19,5 +19,12 @@
     "TOKIO_WORKER_THREADS": "{cores}",
     "DB_READERS": "{cores}"
   },
-  "concurrency": "1 process, {cores} Tokio threads, {cores} read connections"
+  "concurrency": "1 process, {cores} Tokio threads, {cores} read connections",
+  "docker": {
+    "start": "serve",
+    "seed": "seed {count}",
+    "env": {
+      "BIND_ADDR": "0.0.0.0:{port}"
+    }
+  }
 }

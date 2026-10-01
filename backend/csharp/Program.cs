@@ -15,6 +15,17 @@ static string Env(string name, string fallback) => Environment.GetEnvironmentVar
 var dbPath = Env("DATABASE_PATH", "data/address-book.db");
 var migrations = Env("MIGRATIONS_DIR", "../migrations");
 
+if (args is ["sqlite-version"])
+{
+    // The SQLite this driver links; Docker images record it (CTR-7).
+    using var conn = new Microsoft.Data.Sqlite.SqliteConnection("Data Source=:memory:");
+    conn.Open();
+    using var cmd = conn.CreateCommand();
+    cmd.CommandText = "select sqlite_version()";
+    Console.WriteLine(cmd.ExecuteScalar());
+    return;
+}
+
 if (args is ["seed", ..])
 {
     Seed.Run(new Db(dbPath, 1, migrations), dbPath, args.Length > 1 ? int.Parse(args[1]) : 10_000);

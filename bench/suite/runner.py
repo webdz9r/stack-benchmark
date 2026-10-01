@@ -1,4 +1,9 @@
-"""Runs the benchmark for each selected stack and writes the results."""
+"""Runs the benchmark for each selected stack and writes the results.
+
+Two modes: native (the default: each stack's toolchain on this machine) and
+docker (each stack's image, see docs/requirements/07-containers.md). The steps
+are the same; only building, seeding and starting servers differ.
+"""
 
 from __future__ import annotations
 
@@ -11,10 +16,10 @@ import sqlite3
 import subprocess
 import sys
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 
-from . import machine, procs, report
+from . import containers, machine, procs, report
 from .stacks import ROOT, Stack, fill
 
 LOADTEST_DIR = ROOT / "loadtest"
@@ -76,6 +81,10 @@ class Options:
     think_ms: int = 3000
     edit_pct: int = 5
     endpoint_clients: int = 50
+    wait_quiet: int = 0      # minutes to wait, before each stack, for other programs to go quiet
+    mode: str = "native"     # or "docker"
+    loadgen: str = "network"  # docker mode: "network" (a container on the network) or "host" (published ports)
+    memory: str = "4g"       # docker mode: --memory per server container
 
 
 def log(msg: str) -> None:
@@ -108,14 +117,21 @@ def _base_env() -> dict:
 
 # ---------------------------------------------------------------- setup
 
-def build_loadtest() -> None:
+def build_loadtest(opts: Options) -> None:
     log("building loadtest")
     out = sh("cargo build --release --quiet", LOADTEST_DIR)
     if out.returncode != 0:
         raise SystemExit(f"loadtest build failed:\n{out.stderr}")
+    if opts.mode == "docker" and opts.loadgen == "network":
+        out = containers.docker("build", "-q", "-f", str(LOADTEST_DIR / "Dockerfile"), "-t",
+                                containers.LOADTEST_IMAGE, str(ROOT), timeout=1800)
+        if out.returncode != 0:
+            raise SystemExit(f"loadtest image build failed:\n{out.stderr}")
 
 
-def build_stack(stack: Stack, run_dir: Path) -> tuple[bool, float, str]:
+def build_stack(stack: Stack, run_dir: Path, opts: Options) -> tuple[bool, float, str]:
+    if opts.mode == "docker":
+        return containers.build_image(stack, run_dir / stack.name / "build.log")
     started = time.monotonic()
     for cmd in stack.build:
         out = sh(cmd, stack.dir, log_file=run_dir / stack.name / "build.log")
@@ -124,7 +140,23 @@ def build_stack(stack: Stack, run_dir: Path) -> tuple[bool, float, str]:
     return True, time.monotonic() - started, ""
 
 
-def ensure_dataset(reference: Stack, count: int, run_dir: Path) -> Path:
+def run_seeder(stack: Stack, count: int, db: Path | None, opts: Options, log_file: Path,
+               tag: str) -> tuple[subprocess.CompletedProcess, float]:
+    """Seed `count` contacts into `db` (None: discard the database). Returns output and wall time."""
+    env = stack.environment(opts.mode, port=stack.port, cores=opts.cores)
+    if opts.mode == "docker":
+        return containers.seed(stack, count, env, db, log_file, volume=f"sb-{stack.name}-{tag}")
+    target = db or WORK / f"{stack.name}-{tag}.db"
+    _remove_db(target)
+    started = time.monotonic()
+    out = sh(fill(stack.seed, count=count), stack.dir, env={**env, "DATABASE_PATH": str(target)}, log_file=log_file)
+    wall = time.monotonic() - started
+    if db is None:
+        _remove_db(target)
+    return out, wall
+
+
+def ensure_dataset(reference: Stack, count: int, opts: Options) -> Path:
     """Build the shared dataset once with the reference seeder, and reuse it."""
     CACHE.mkdir(parents=True, exist_ok=True)
     path = CACHE / f"dataset-{count}.db"
@@ -133,9 +165,8 @@ def ensure_dataset(reference: Stack, count: int, run_dir: Path) -> Path:
     log(f"building the {count:,}-contact dataset with the {reference.label} seeder")
     tmp = CACHE / f"dataset-{count}.tmp.db"
     _remove_db(tmp)
-    out = sh(fill(reference.seed, count=count), reference.dir,
-             env={**reference.environment(port=reference.port, cores=4), "DATABASE_PATH": str(tmp)})
-    if out.returncode != 0:
+    out, _ = run_seeder(reference, count, tmp, opts, WORK / "dataset-seed.log", "dataset")
+    if out.returncode != 0 or not tmp.exists():
         raise SystemExit(f"dataset seeding failed:\n{out.stdout}{out.stderr}")
     _copy_db(tmp, path)
     _remove_db(tmp)
@@ -158,10 +189,16 @@ def _remove_db(path: Path) -> None:
         Path(str(path) + suffix).unlink(missing_ok=True)
 
 
-def versions(stack: Stack) -> list[str]:
+def versions(stack: Stack, opts: Options) -> list[str]:
     lines = []
     for cmd in stack.versions:
-        out = sh(cmd, stack.dir, timeout=120)
+        if opts.mode == "docker":
+            # The same commands, inside the image; tools that only exist at build time are skipped.
+            out = containers.docker("run", "--rm", "--entrypoint", "sh", stack.image, "-c", cmd, timeout=120)
+            if out.returncode != 0:
+                continue
+        else:
+            out = sh(cmd, stack.dir, timeout=120)
         text = (out.stdout or out.stderr).strip().splitlines()
         if text:
             lines.append(text[0].strip())
@@ -170,26 +207,45 @@ def versions(stack: Stack) -> list[str]:
 
 # ---------------------------------------------------------------- measurements
 
-def start_server(stack: Stack, db: Path, opts: Options, log_path: Path) -> tuple[procs.Server, float | None]:
-    env = {**stack.environment(port=stack.port, cores=opts.cores), "DATABASE_PATH": str(db)}
-    server = procs.Server(fill(stack.start, port=stack.port, cores=opts.cores), stack.dir, env, log_path)
+def start_server(stack: Stack, db: Path, opts: Options, log_path: Path):
+    """Start the stack's server on a copy of `db`; returns (server, ms to first healthy response)."""
+    env = stack.environment(opts.mode, port=stack.port, cores=opts.cores)
+    if opts.mode == "docker":
+        volume = f"sb-{stack.name}-data"
+        containers.load_db(stack, volume, db, "bench.db")
+        server = containers.ContainerServer(stack, volume, "bench.db", env, opts.cores, opts.memory, log_path)
+    else:
+        server = procs.Server(fill(stack.start, port=stack.port, cores=opts.cores), stack.dir,
+                              {**env, "DATABASE_PATH": str(db)}, log_path)
     return server, procs.wait_healthy(stack.port, server)
 
 
-def run_loadtest(port: int, out_json: Path, **params) -> dict:
-    args = [str(LOADTEST), f"url=http://127.0.0.1:{port}", f"json={out_json}"]
-    args += [f"{k}={v}" for k, v in params.items()]
-    subprocess.run(args, capture_output=True, text=True, timeout=3600)
+def stop_server(server, stack: Stack, opts: Options) -> None:
+    server.stop()
+    if opts.mode == "docker":
+        containers.remove_volume(f"sb-{stack.name}-data")
+
+
+def loadtest_cmd(stack: Stack, out_json: Path, opts: Options, params: dict) -> list[str]:
+    """The load generator: on the host against the published port, or in a
+    container on the Docker network (--loadgen network)."""
+    args = [f"{k}={v}" for k, v in params.items()]
+    if opts.mode == "docker" and opts.loadgen == "network":
+        return ["docker", "run", "--rm", "--network", containers.NETWORK, "-v", f"{out_json.parent.resolve()}:/out",
+                containers.LOADTEST_IMAGE, f"url=http://{stack.name}:{stack.port}", f"json=/out/{out_json.name}", *args]
+    return [str(LOADTEST), f"url=http://127.0.0.1:{stack.port}", f"json={out_json}", *args]
+
+
+def run_loadtest(stack: Stack, out_json: Path, opts: Options, **params) -> dict:
+    subprocess.run(loadtest_cmd(stack, out_json, opts, params), capture_output=True, text=True, timeout=3600)
     return json.loads(out_json.read_text()) if out_json.exists() else {}
 
 
-def conformance(stack: Stack, run_dir: Path) -> dict:
+def conformance(stack: Stack, run_dir: Path, opts: Options) -> dict:
     """VER-1: seed 10k contacts into an empty database and hash its contents."""
     db = WORK / f"{stack.name}-checksum.db"
     _remove_db(db)
-    out = sh(fill(stack.seed, count=10_000), stack.dir,
-             env={**stack.environment(port=stack.port, cores=4), "DATABASE_PATH": str(db)},
-             log_file=run_dir / stack.name / "seed.log")
+    out, _ = run_seeder(stack, 10_000, db, opts, run_dir / stack.name / "seed.log", "checksum")
     if out.returncode != 0 or not db.exists():
         return {"ok": False, "checksum": "", "error": "seeder failed (see seed.log)"}
     digest = seed_checksum(db)
@@ -210,7 +266,7 @@ def seed_checksum(db: Path) -> str:
 
 
 def parity(stack: Stack, reference: Stack, db: Path, opts: Options, run_dir: Path) -> dict:
-    """VER-2: the 62-request parity check against the reference server."""
+    """VER-2: the parity check against the reference server, run in the same mode (CTR-17)."""
     ref_db = WORK / "reference.db"
     _copy_db(db, ref_db)
     ref, ready = start_server(reference, ref_db, opts, run_dir / stack.name / "reference-server.log")
@@ -226,31 +282,47 @@ def parity(stack: Stack, reference: Stack, db: Path, opts: Options, run_dir: Pat
         ok = bool(m) and m.group(2) == "0" and m.group(3) == m.group(4)
         return {"ok": ok, "summary": last}
     finally:
-        ref.stop()
+        stop_server(ref, reference, opts)
         _remove_db(ref_db)
 
 
-def ramp(stack: Stack, server: procs.Server, opts: Options, stack_dir: Path) -> list[dict]:
+def docker_machinery_pids() -> list[int]:
+    """Docker Desktop's host processes (the VM, and the port forwarder that carries
+    published-port traffic). Their CPU is the containers' and the load's, not other
+    programs'."""
+    if procs.SYSTEM != "Darwin":
+        return []
+    out = subprocess.run(["ps", "-A", "-o", "pid=,comm="], capture_output=True, text=True).stdout
+    return [int(l.split(None, 1)[0]) for l in out.splitlines()
+            if "com.apple.Virtualization.VirtualMachine" in l or "com.docker.backend" in l]
+
+
+def ramp(stack: Stack, server, opts: Options, stack_dir: Path) -> list[dict]:
     levels = []
     p = opts.profile
+    machinery = docker_machinery_pids() if opts.mode == "docker" else []
     for users in p.levels:
         log(f"  {stack.name}: {users:,} users")
         out_json = stack_dir / f"ramp-{users}.json"
         proc = subprocess.Popen(
-            [str(LOADTEST), f"url=http://127.0.0.1:{stack.port}", f"json={out_json}",
-             f"users={users}", f"think={opts.think_ms}", f"edits={opts.edit_pct}",
-             f"warmup={p.ramp_warmup}", f"duration={p.ramp_duration}", f"max_id={opts.dataset}"],
+            loadtest_cmd(stack, out_json, opts, {
+                "users": users, "think": opts.think_ms, "edits": opts.edit_pct,
+                "warmup": p.ramp_warmup, "duration": p.ramp_duration, "max_id": opts.dataset}),
             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         # CPU = CPU-seconds used during the measured window / window length.
         time.sleep(p.ramp_warmup)
-        pids = server.pids()
-        cpu0, t0 = procs.cpu_seconds(pids), time.monotonic()
-        other = procs.OtherWork(pids + [proc.pid])  # everything except the server, load generator and runner
+        ours = sorted({*server.host_pids(), *machinery, proc.pid})
+        stat0 = server.cpu_stat() if opts.mode == "docker" else {}
+        cpu0, t0 = server.cpu_seconds(), time.monotonic()
+        machinery0 = procs.cpu_seconds(machinery)
+        other = procs.OtherWork(ours)  # everything except the server, load generator, Docker and runner
         time.sleep(p.ramp_duration / 2)
-        rss = procs.rss_mb(server.pids())  # ps doesn't pause the process
+        rss = server.rss_mb()  # ps / cgroup reads don't pause the process
         time.sleep(p.ramp_duration / 2)
-        cpu1, t1 = procs.cpu_seconds(server.pids()), time.monotonic()
-        background = other.cores(server.pids() + [proc.pid])
+        cpu1, t1 = server.cpu_seconds(), time.monotonic()
+        stat1 = server.cpu_stat() if opts.mode == "docker" else {}
+        machinery1 = procs.cpu_seconds(machinery)
+        background = other.cores(sorted({*server.host_pids(), *machinery, proc.pid}))
         proc.wait(timeout=600)
         result = json.loads(out_json.read_text()) if out_json.exists() else {}
         level = {
@@ -259,10 +331,21 @@ def ramp(stack: Stack, server: procs.Server, opts: Options, stack_dir: Path) -> 
             "cpu_cores": round((cpu1 - cpu0) / (t1 - t0), 2),
             "background_cores": round(background, 2),
             "rss_mb": round(rss, 1),
-            # Measured after the run: vmmap pauses the process it inspects.
-            "memory_after_mb": round(procs.footprint_mb(server.pids()), 1),
+            # Measured after the run: vmmap (native, macOS) pauses the process it inspects.
+            "memory_after_mb": round(server.footprint_mb(), 1),
             "server_alive": server.alive(),
         }
+        if stat1:
+            # How much the --cpus quota held the server back: paused periods / periods,
+            # and paused time per second of the window (CTR-16).
+            periods = stat1.get("nr_periods", 0) - stat0.get("nr_periods", 0)
+            level["throttled_pct"] = round(100 * (stat1.get("nr_throttled", 0) - stat0.get("nr_throttled", 0))
+                                           / periods, 1) if periods else 0.0
+            level["throttled_ms_per_s"] = round((stat1.get("throttled_usec", 0) - stat0.get("throttled_usec", 0))
+                                                / 1000 / (t1 - t0), 1)
+        if machinery:
+            # Host CPU of Docker Desktop's VM and port forwarder: the container's CPU plus Docker's overhead.
+            level["docker_host_cores"] = round((machinery1 - machinery0) / (t1 - t0), 2)
         levels.append(level)
         p99 = result.get("all", {}).get("p99_ms", float("inf"))
         if not server.alive():
@@ -275,15 +358,8 @@ def ramp(stack: Stack, server: procs.Server, opts: Options, stack_dir: Path) -> 
 
 
 def seed_bench(stack: Stack, opts: Options, run_dir: Path) -> dict:
-    db = WORK / f"{stack.name}-seed.db"
-    _remove_db(db)
     count = opts.profile.seed_count
-    started = time.monotonic()
-    out = sh(fill(stack.seed, count=count), stack.dir,
-             env={**stack.environment(port=stack.port, cores=4), "DATABASE_PATH": str(db)},
-             log_file=run_dir / stack.name / "seed.log")
-    wall = time.monotonic() - started
-    _remove_db(db)
+    out, wall = run_seeder(stack, count, None, opts, run_dir / stack.name / "seed.log", "seed")
     m = re.search(r"in ([\d.]+) ms \((\d+) contacts/sec", out.stdout)
     if out.returncode != 0 or not m:
         return {"ok": False, "count": count, "error": "seeder failed (see seed.log)"}
@@ -293,20 +369,48 @@ def seed_bench(stack: Stack, opts: Options, run_dir: Path) -> dict:
 
 # ---------------------------------------------------------------- one stack
 
-def warn_if_busy(meta: dict, what: str) -> float:
+def warn_if_busy(meta: dict, what: str, opts: Options) -> float:
     """Sample 2 s of CPU used by other programs; warn if it's over the threshold."""
-    other = procs.OtherWork([])
+    machinery = docker_machinery_pids() if opts.mode == "docker" else []
+    other = procs.OtherWork(machinery)
     time.sleep(2)
-    cores = other.cores([])
+    cores = other.cores(machinery)
     if cores > meta["busy_threshold"]:
         log(f"WARNING: other programs used {cores:.1f} cores just before {what} (threshold "
             f"{meta['busy_threshold']:.1f}): results will be noisy. Close them for publishable numbers.")
+    if opts.mode == "docker":
+        others = containers.other_containers()
+        if others:
+            log(f"WARNING: other containers are running ({', '.join(others)}); they share CPU with the "
+                "stack under test. Stop them for publishable numbers.")
     return cores
+
+
+def wait_for_quiet(meta: dict, what: str, opts: Options) -> None:
+    """Hold until other programs stay under the busy threshold for two samples in a
+    row (macOS indexing and media analysis come in bursts), or give up after
+    opts.wait_quiet minutes and let the busy check flag the result."""
+    machinery = docker_machinery_pids() if opts.mode == "docker" else []
+    deadline, quiet, waited = time.monotonic() + opts.wait_quiet * 60, 0, False
+    while time.monotonic() < deadline:
+        other = procs.OtherWork(machinery)
+        time.sleep(5)
+        if other.cores(machinery) <= meta["busy_threshold"]:
+            quiet += 1
+            if quiet >= 2:
+                if waited:
+                    log(f"machine is quiet again; starting {what}")
+                return
+        else:
+            if not waited:
+                log(f"waiting up to {opts.wait_quiet} min for other programs to go quiet before {what}")
+            quiet, waited = 0, True
+    log(f"still busy after {opts.wait_quiet} min; running {what} anyway (it will be flagged)")
 
 
 def run_stack(stack: Stack, reference: Stack, dataset: Path, opts: Options, run_dir: Path, meta: dict,
               load: float | None = None) -> dict:
-    """Benchmark one stack into results/<stack>/, replacing its previous results."""
+    """Benchmark one stack into <results>/<stack>/, replacing its previous results."""
     stack_dir = run_dir / stack.name
     shutil.rmtree(stack_dir, ignore_errors=True)
     stack_dir.mkdir(parents=True, exist_ok=True)
@@ -314,6 +418,7 @@ def run_stack(stack: Stack, reference: Stack, dataset: Path, opts: Options, run_
         "name": stack.name, "label": stack.label, "description": stack.description,
         "concurrency": fill(stack.concurrency, cores=opts.cores), "port": stack.port, "slot": stack.slot,
         "status": "ok", "error": "", "versions": [], "started_at": dt.datetime.now().isoformat(timespec="seconds"),
+        "mode": opts.mode,
         "background_before_cores": round(load, 2) if load is not None else None,
         "run": meta,  # machine, profile, core budget, ...: backends are often measured at different times
     }
@@ -325,25 +430,30 @@ def run_stack(stack: Stack, reference: Stack, dataset: Path, opts: Options, run_
         (stack_dir / "result.json").write_text(json.dumps(result, indent=2))
         return result
 
-    missing = stack.missing_tools()
+    if opts.mode == "docker" and not stack.docker:
+        log(f"{stack.name}: skipped, no docker block in bench.json")
+        return finish("skipped", "no docker block in bench.json (docs/requirements/07-containers.md)")
+    missing = stack.missing_tools(opts.mode)
     if missing:
         log(f"{stack.name}: skipped, missing {', '.join(missing)}")
         return finish("skipped", f"missing tools: {', '.join(missing)}")
     if procs.port_in_use(stack.port):
         return finish("failed", f"port {stack.port} is already in use; stop whatever is running there")
 
-    if opts.build and stack.build:
-        log(f"{stack.name}: building")
-        ok, secs, error = build_stack(stack, run_dir)
+    if opts.build and (stack.build or opts.mode == "docker"):
+        log(f"{stack.name}: building{' image' if opts.mode == 'docker' else ''}")
+        ok, secs, error = build_stack(stack, run_dir, opts)
         result["build_s"] = round(secs, 1)
         if not ok:
             log(f"{stack.name}: build failed")
             return finish("failed", error)
-    result["versions"] = versions(stack)
+    if opts.mode == "docker":
+        result["docker"] = {**containers.image_details(stack), "loadgen": opts.loadgen}
+    result["versions"] = versions(stack, opts)
 
     if opts.conformance:
         log(f"{stack.name}: seed checksum")
-        result["conformance"] = conformance(stack, run_dir)
+        result["conformance"] = conformance(stack, run_dir, opts)
 
     db = WORK / f"{stack.name}.db"
     _copy_db(dataset, db)
@@ -353,13 +463,13 @@ def run_stack(stack: Stack, reference: Stack, dataset: Path, opts: Options, run_
         if startup_ms is None:
             return finish("failed", "server did not answer /api/health (see server.log)")
         result["startup_ms"] = round(startup_ms)
-        other = procs.OtherWork(server.pids())
+        machinery = docker_machinery_pids() if opts.mode == "docker" else []
+        other = procs.OtherWork(sorted({*server.host_pids(), *machinery}))
         time.sleep(3)
-        pids = server.pids()
-        result["background_idle_cores"] = round(other.cores(pids), 2)
-        result["processes"] = len(pids)
-        result["idle_memory_mb"] = round(procs.footprint_mb(pids), 1)
-        result["idle_rss_mb"] = round(procs.rss_mb(pids), 1)
+        result["background_idle_cores"] = round(other.cores(sorted({*server.host_pids(), *machinery})), 2)
+        result["processes"] = server.process_count()
+        result["idle_memory_mb"] = round(server.footprint_mb(), 1)
+        result["idle_rss_mb"] = round(server.rss_mb(), 1)
 
         if opts.parity and stack.name != reference.name:
             log(f"{stack.name}: parity check against {reference.label}")
@@ -370,7 +480,7 @@ def run_stack(stack: Stack, reference: Stack, dataset: Path, opts: Options, run_
             p = opts.profile
             result["endpoints"] = []
             for label, path in ENDPOINTS:
-                data = run_loadtest(stack.port, stack_dir / "endpoint.json", endpoint=path,
+                data = run_loadtest(stack, stack_dir / "endpoint.json", opts, endpoint=path,
                                     users=opts.endpoint_clients, think=0,
                                     warmup=p.endpoint_warmup, duration=p.endpoint_duration)
                 result["endpoints"].append({"label": label, "path": path, "result": data})
@@ -380,7 +490,7 @@ def run_stack(stack: Stack, reference: Stack, dataset: Path, opts: Options, run_
             log(f"{stack.name}: simulated users")
             result["ramp"] = ramp(stack, server, opts, stack_dir)
     finally:
-        server.stop()
+        stop_server(server, stack, opts)
         _remove_db(db)
 
     if opts.seed:
@@ -393,20 +503,22 @@ def run_stack(stack: Stack, reference: Stack, dataset: Path, opts: Options, run_
 # ---------------------------------------------------------------- whole run
 
 def run(stacks: list[Stack], all_stacks: list[Stack], opts: Options) -> Path:
-    """Benchmark the given stacks into results/<stack>/ and rebuild results/summary.*."""
+    """Benchmark the given stacks and rebuild the summary. Native results go to
+    results/, Docker results to results/docker/ (CTR-15), unless --out says otherwise."""
     reference = next((s for s in all_stacks if s.name == opts.reference), None)
     if reference is None:
         raise SystemExit(f"reference stack {opts.reference!r} not found")
 
     info = machine.collect()
-    root = opts.out or RESULTS
+    root = (opts.out or (RESULTS / "docker" if opts.mode == "docker" else RESULTS)).resolve()
     root.mkdir(parents=True, exist_ok=True)
     WORK.mkdir(parents=True, exist_ok=True)
 
     meta = {
         "machine": info,
         "git": machine.git_state(),
-        "memory_metric": machine.memory_metric_name(),
+        "memory_metric": machine.memory_metric_name() if opts.mode == "native"
+                         else "container working set (cgroup memory.current minus inactive_file)",
         "started_at": dt.datetime.now().isoformat(timespec="seconds"),
         "profile": vars(opts.profile),
         "cores": opts.cores,
@@ -418,22 +530,33 @@ def run(stacks: list[Stack], all_stacks: list[Stack], opts: Options) -> Path:
         "endpoint_clients": opts.endpoint_clients,
         "notes": opts.notes,
         "busy_threshold": machine.busy_threshold(info),
+        "mode": opts.mode,
     }
+    if opts.mode == "docker":
+        d = containers.info()
+        meta.update({"docker": d, "loadgen": opts.loadgen, "memory": opts.memory})
+        if d["vm_cpus"] and d["vm_cpus"] < opts.cores + 2:
+            log(f"WARNING: Docker has {d['vm_cpus']} CPUs; give it at least {opts.cores + 2} (cores + 2) "
+                "so the load and Docker itself don't compete with the server.")
+        containers.ensure_network()
     log(f"==== benchmark run: {', '.join(s.name for s in stacks)} (profile {opts.profile.name}, "
-        f"{opts.cores} cores){' — ' + opts.notes if opts.notes else ''}")
+        f"{opts.cores} cores, {opts.mode}){' — ' + opts.notes if opts.notes else ''}")
     log(f"results: {root}")
-    warn_if_busy(meta, "the run")
+    warn_if_busy(meta, "the run", opts)
 
-    build_loadtest()
-    if opts.build and reference.build and (opts.parity or not (CACHE / f"dataset-{opts.dataset}.db").exists()):
+    build_loadtest(opts)
+    needs_reference = opts.parity or not (CACHE / f"dataset-{opts.dataset}.db").exists()
+    if opts.build and needs_reference and (reference.build or opts.mode == "docker"):
         log(f"{reference.name}: building (reference)")
-        ok, _, error = build_stack(reference, WORK)
+        ok, _, error = build_stack(reference, WORK, opts)
         if not ok:
             raise SystemExit(f"reference build failed: {error}")
-    dataset = ensure_dataset(reference, opts.dataset, WORK)
+    dataset = ensure_dataset(reference, opts.dataset, opts)
 
     for stack in stacks:
-        before = warn_if_busy(meta, stack.name)
+        if opts.wait_quiet:
+            wait_for_quiet(meta, stack.name, opts)
+        before = warn_if_busy(meta, stack.name, opts)
         result = run_stack(stack, reference, dataset, opts, root, meta, before)
         report.write_stack(root, result)
         report.write_summary(root)  # after every stack, so a long run shows progress

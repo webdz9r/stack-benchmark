@@ -23,6 +23,7 @@ If you are an agent implementing a new backend, read the documents in order:
 | 4 | [04-caching-and-http.md](04-caching-and-http.md) | Response cache, `X-Fresh`, ETags and 304s, gzip, headers |
 | 5 | [05-seeder.md](05-seeder.md) | The deterministic data generator, specified exactly |
 | 6 | [06-verification.md](06-verification.md) | Parity check, seed checksum, benchmark integration, acceptance checklist |
+| 7 | [07-containers.md](07-containers.md) | Docker mode: Dockerfile rules, running and measuring stacks in containers |
 
 Then build the backend, register it with the benchmark suite (a `bench.json`
 manifest, see [`bench/README.md`](../../bench/README.md#adding-a-backend)), and

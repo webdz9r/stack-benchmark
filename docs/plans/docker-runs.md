@@ -1,6 +1,30 @@
 # Plan: run stacks and benchmarks in Docker
 
-Status: proposed · 2026-09-30
+Status: built on the `docker` branch · requirements in [07-containers.md](../requirements/07-containers.md)
+
+## What was built, and where it differs from this plan
+
+Phases 1–6 are implemented on the `docker` branch. The rules are in
+[07-containers.md](../requirements/07-containers.md) (CTR-1..18), not in the
+CTR list below, which is the original proposal. Changes from the plan:
+
+- **Debian 13 (trixie)**, not 12 (bookworm): it's the current stable release,
+  and every official image used has a trixie variant.
+- **.NET 10 and JDK 27 have no official Debian-based image.** The runtime is
+  installed from the vendor on `debian:trixie-slim` instead: Microsoft's
+  `dotnet-install.sh` (ASP.NET Core runtime), and Eclipse Temurin 27 from
+  Adoptium (JDK to build, JRE to run).
+- **The SQLite version is a file, `/app/sqlite-version`**, written at build
+  time, rather than an image label (labels can't be computed during a build).
+  C# and Java gained a `sqlite-version` command to produce it.
+- **The load generator defaults to the Docker network** (`--loadgen network`),
+  not the host. On macOS, published ports go through Docker Desktop's port
+  forwarder, which capped Rust's cached endpoints at ~45k req/s against
+  135–180k on the network: the forwarder was being measured.
+- **Phase 0 became a by-product** of the full runs: native and Docker results
+  for every stack, side by side in the root README.
+- Along the way, `backend/c/Makefile` got a fix for a race under `make -j` (two
+  targets sharing one download rule), and Rails' Puma now reads `HOST`.
 
 ## Goal
 

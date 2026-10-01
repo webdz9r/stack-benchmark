@@ -14,6 +14,9 @@ Rails and Rails + ActiveRecord). Fields:
     seed         command that runs the seeder; {count} is substituted
     env          extra environment; {port} and {cores} are substituted
     concurrency  how the core budget is applied, for the report
+    docker       optional, for Docker mode (docs/requirements/07-containers.md):
+                 {"start": "serve", "seed": "seed {count}", "env": {...},
+                  "dockerfile": "Dockerfile"}; docker.env is merged over env
 
 The runner always sets DATABASE_PATH. Commands run in the stack folder.
 """
@@ -44,13 +47,33 @@ class Stack:
     versions: list[str] = field(default_factory=list)
     requires: list[str] = field(default_factory=list)
     concurrency: str = ""
+    docker: dict | None = None
     slot: int = 0  # fixed color slot, by port order across all stacks
 
-    def missing_tools(self) -> list[str]:
+    def missing_tools(self, mode: str = "native") -> list[str]:
+        if mode == "docker":
+            return [] if shutil.which("docker") else ["docker"]
         return [tool for tool in self.requires if shutil.which(tool) is None]
 
-    def environment(self, **values) -> dict[str, str]:
-        return {k: fill(v, **values) for k, v in self.env.items()}
+    def environment(self, mode: str = "native", **values) -> dict[str, str]:
+        env = dict(self.env)
+        if mode == "docker" and self.docker:
+            env.update(self.docker.get("env", {}))
+        return {k: fill(v, **values) for k, v in env.items()}
+
+    # Docker mode. Variants in one folder (rails, rails-ar) share one image.
+    @property
+    def image(self) -> str:
+        return f"stack-benchmark-{self.dir.name}"
+
+    @property
+    def dockerfile(self) -> Path:
+        return self.dir / (self.docker or {}).get("dockerfile", "Dockerfile")
+
+    @property
+    def container_dir(self) -> str:
+        """The stack's working directory inside its image (CTR-6)."""
+        return f"/app/backend/{self.dir.name}"
 
 
 def fill(template: str, **values) -> str:
@@ -72,6 +95,7 @@ def discover() -> list[Stack]:
                 port=int(m["port"]), dir=path.parent, start=m["start"], seed=m["seed"],
                 build=m.get("build", []), env=m.get("env", {}), versions=m.get("versions", []),
                 requires=m.get("requires", []), concurrency=m.get("concurrency", ""),
+                docker=m.get("docker"),
             ))
     stacks.sort(key=lambda s: s.port)
     for kind in ("name", "port"):

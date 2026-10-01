@@ -79,6 +79,23 @@ These were real bottlenecks in more than one stack.
   connections hold up every other request behind them (ARCH-11). In Rust the
   pure-Rust gzip on the 4 async workers tripled p99 at 4,000 users.
 
+## Run it in Docker too
+
+Docker mode (`bench/run.py --mode docker`, see
+[07-containers.md](requirements/07-containers.md)) is a second opinion worth
+getting for every stack:
+
+- **It enforces the core budget.** Natively, a stack's budget is only its own
+  settings, and some spread past them: Python used ~11 cores at 4,000 users. In
+  a container `--cpus=4` is a hard cap, so the Docker capacity is the honest
+  4-core number (Python: ~2,050 users, against ~3,050 natively). Watch
+  `throttled_pct` in Docker reports: bursty runtimes (GC, JIT, helper threads)
+  get paused by the quota even when their average CPU is under it.
+- **It runs on Linux and glibc.** That exposed a real bug in the C backend:
+  `buf_take` returned unterminated memory for an empty buffer. macOS usually
+  hands back zeroed memory, so the empty label still read as `""` and native
+  parity passed; on Linux it returned garbage and parity failed.
+
 ## Tools that worked
 
 | Question | Tool |
@@ -118,7 +135,7 @@ These were real bottlenecks in more than one stack.
   Zoom, Spotlight or an App Store update easily use 1.5 cores.
 - **macOS starts its own background work when the machine looks idle**, which
   is exactly when a benchmark runs. `mediaanalysisd` (Photos analysis) and
-  `spotlightknowledged` (Spotlight) together took ~3.3 cores during a Rails run
+  `spotlightknowledged` / `corespotlightd` (Spotlight) together took ~3.3 cores during a Rails run
   and made it look 2x worse. When a run is flagged busy, check
   `top -o cpu -stats pid,cpu,command` before blaming the stack, and rerun
   once they've finished.

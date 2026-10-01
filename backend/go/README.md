@@ -50,6 +50,13 @@ GOMAXPROCS=4 DB_READERS=4 ./server           # :7883
   temporarily for CPU profiles. See [`docs/optimizing.md`](../../docs/optimizing.md).
 - **Not investigated yet:** p99 at 6,000 users (~133 ms).
 
+## Docker
+
+`Dockerfile` builds this stack on Debian 13 slim with the same settings as
+native ([07-containers.md](../../docs/requirements/07-containers.md)).
+Run it with `docker compose --profile go up --build` from the repo root, or
+benchmark it with `python3 bench/run.py --mode docker --stacks go`.
+
 ## Verify and benchmark
 
 ```sh

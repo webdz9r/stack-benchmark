@@ -47,7 +47,9 @@ copy of the schema.
 | `bench/README.md` | you run the suite, change it, or register a stack (`bench.json` format) |
 | `results/README.md` | you need the layout of benchmark output and how reports are rebuilt |
 | `logs/README.md` | you follow or debug a benchmark run (`logs/bench.log`) |
-| `docs/plans/` | proposals not built yet (`docker-runs.md`: running stacks and benchmarks in Docker); check its status before acting on one |
+| `docs/requirements/07-containers.md` | you write or change a stack's `Dockerfile`, or run anything in Docker mode |
+| `compose.yaml` | you run a stack in Docker by hand; it's generated from the `bench.json` files, so regenerate it rather than editing it |
+| `docs/plans/` | plans: `docker-runs.md` is how Docker mode was planned (now built); check a plan's status before acting on one |
 
 Keep this map current: when you add a doc, add a row here.
 
@@ -106,6 +108,10 @@ python3 bench/run.py --stacks go,rust --profile quick
 python3 bench/run.py                                 # all stacks, standard profile (~6 min/stack)
 python3 bench/report.py                              # re-render all reports from the JSON
 tail -f logs/bench.log                               # follow a running benchmark
+
+# Docker mode (docs/requirements/07-containers.md): results go to results/docker/
+python3 bench/run.py --mode docker --stacks rust --profile quick
+docker compose --profile rust up --build                 # run one stack by hand
 ```
 
 Per-stack build and run commands, with each stack's 4-core settings, are in
@@ -162,6 +168,22 @@ each `backend/<stack>/README.md` and its `bench.json`. Some stack-specific point
 - **Cache staleness is part of the design.** Flushing the cache on every write
   collapsed its hit rate. Keep the 1 s published generation, and keep `X-Fresh`
   for read-your-writes (see `04-caching-and-http.md`).
+
+## Docker rules
+
+- **Never mix native and Docker numbers.** Docker runs write to
+  `results/docker/`; the reports warn if a summary mixes modes (CTR-15).
+- **One base family:** every runtime image is Debian 13 slim (glibc), never
+  Alpine/musl (CTR-2). Where no official Debian image exists (.NET 10, JDK 27),
+  install the vendor's build on `debian:trixie-slim`.
+- **Dockerfiles hold build choices only.** Budget variables (`GOMAXPROCS`,
+  `DB_READERS`, workers, ...) come from `bench.json` at run time (CTR-5), and
+  tuning must match native mode (CTR-4).
+- **Databases on named volumes, never bind mounts** (CTR-11).
+- **Load generator on the Docker network** (the default). On macOS, published
+  ports go through Docker Desktop's port forwarder, which caps fast endpoints.
+- **Stop other containers** before a publishable Docker run; they share the VM.
+  The runner lists them. Don't stop the user's containers yourself: ask.
 
 ## Optimizing a stack
 

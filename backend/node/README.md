@@ -66,6 +66,13 @@ DB_READERS=4 node src/main.js                # :7880
   - Lock waits don't appear in `--cpu-prof`: threads blocked on a mutex look
     idle. See [`docs/optimizing.md`](../../docs/optimizing.md).
 
+## Docker
+
+`Dockerfile` builds this stack on Debian 13 slim with the same settings as
+native ([07-containers.md](../../docs/requirements/07-containers.md)).
+Run it with `docker compose --profile node up --build` from the repo root, or
+benchmark it with `python3 bench/run.py --mode docker --stacks node`.
+
 ## Verify and benchmark
 
 ```sh

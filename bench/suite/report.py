@@ -183,6 +183,12 @@ def machine_rows(meta: dict, run_details: bool = True) -> list[tuple[str, str]]:
     ]
     if m.get("power"):
         rows.append(("Power", m["power"]))
+    if meta.get("mode") == "docker":
+        d = meta.get("docker", {})
+        rows.append(("Mode", f"Docker {d.get('docker_version', '')} ({d.get('engine_os', '')}, "
+                             f"{d.get('vm_cpus', '?')} CPUs / {d.get('vm_memory_gb', '?')} GB for containers); "
+                             f"each server in a container limited to {meta['cores']} CPUs / {meta.get('memory', '?')}, "
+                             f"load generator on the {'host via published ports' if meta.get('loadgen') == 'host' else 'Docker network'}"))
     if not run_details:
         rows.append(("Memory metric", meta["memory_metric"]))
         return rows
@@ -240,6 +246,8 @@ def comparability(results: list[dict]) -> list[str]:
         ("profiles", lambda m: m["profile"]["name"]),
         ("core budgets", lambda m: f"{m['cores']} cores"),
         ("datasets", lambda m: f"{m['dataset']:,} contacts"),
+        ("modes (native vs Docker)", lambda m: m.get("mode", "native")),
+        ("load generator placements", lambda m: m.get("loadgen", "host")),
     ):
         values = distinct(fn)
         if len(values) > 1:
@@ -256,7 +264,8 @@ def source_rows(results: list[dict]) -> list[list[str]]:
     rows = []
     for r in results:
         m = r["_meta"]
-        rows.append([r["label"], (r.get("started_at") or m["started_at"]).replace("T", " "), m["profile"]["name"],
+        profile = m["profile"]["name"] + (" (Docker)" if m.get("mode") == "docker" else "")
+        rows.append([r["label"], (r.get("started_at") or m["started_at"]).replace("T", " "), profile,
                      f"{m['cores']}", m["machine"].get("cpu") or "?",
                      "busy ⚠" if r.get("_busy") else "quiet", m["git"]["commit"]])
     return rows
@@ -289,7 +298,10 @@ def summary_rows(r: dict) -> list[list[str]]:
         ["Seed checksum (VER-1)", check(conf["ok"]) if conf else "—"],
         ["API parity (VER-2)", f"{check(par['ok'])} ({par['summary']})" if par else "— (reference stack)"],
         ["Seeding", seed_text(r.get("seed"))],
-    ]
+    ] + ([
+        ["Image", f"{r['docker'].get('base_image', '?')} runtime, {r['docker'].get('image_size') or '?'}"],
+        ["SQLite in the image", r["docker"].get("sqlite_version") or "?"],
+    ] if r.get("docker") else [])
 
 
 def ramp_rows(r: dict) -> list[list[str]]:
@@ -297,7 +309,8 @@ def ramp_rows(r: dict) -> list[list[str]]:
     for l in r.get("ramp") or []:
         a = l["result"].get("all", {})
         rows.append([f"{l['users']:,}", fmt_int(a.get("req_s")), fmt_ms(a.get("p50_ms")), fmt_ms(a.get("p95_ms")),
-                     fmt_ms(a.get("p99_ms")), fmt_int(l["result"].get("errors")), f"{l['cpu_cores']:.2f}",
+                     fmt_ms(a.get("p99_ms")), fmt_int(l["result"].get("errors")),
+                     f"{l['cpu_cores']:.2f}" + (f" (throttled {l['throttled_pct']:.0f}%)" if l.get("throttled_pct") else ""),
                      fmt_mb(l.get("memory_after_mb")),
                      "—" if l.get("background_cores") is None else f"{l['background_cores']:.2f} cores"])
     return rows

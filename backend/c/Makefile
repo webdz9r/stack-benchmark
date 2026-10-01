@@ -39,11 +39,17 @@ build/%.o: src/%.c src/*.h $(SQLITE_DIR)/sqlite3.h | build
 build/sqlite3.o: $(SQLITE_DIR)/sqlite3.c | build
 	$(CC) $(SQLITE_CFLAGS) -c -o $@ $<
 
-$(SQLITE_DIR)/sqlite3.c $(SQLITE_DIR)/sqlite3.h:
+# One rule downloads both files. The header depends on the source rather than
+# sharing its rule, so `make -j` doesn't run the download twice at once (a
+# grouped target, &:, would need GNU make 4.3; macOS ships 3.81).
+$(SQLITE_DIR)/sqlite3.h: $(SQLITE_DIR)/sqlite3.c
+	touch $@
+
+$(SQLITE_DIR)/sqlite3.c:
 	mkdir -p vendor
 	curl -fsSL -o vendor/sqlite.zip https://sqlite.org/$(SQLITE_YEAR)/sqlite-amalgamation-$(SQLITE_VERSION).zip
 	cd vendor && unzip -oq sqlite.zip && rm sqlite.zip
-	touch $(SQLITE_DIR)/sqlite3.c $(SQLITE_DIR)/sqlite3.h
+	touch $@
 
 build:
 	mkdir -p build

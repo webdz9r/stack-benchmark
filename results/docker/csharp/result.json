@@ -1,0 +1,891 @@
+{
+  "name": "csharp",
+  "label": "C#",
+  "description": "ASP.NET Core minimal APIs, Microsoft.Data.Sqlite, source-generated JSON",
+  "concurrency": "1 process, DOTNET_PROCESSOR_COUNT=4, 4 read connections",
+  "port": 7884,
+  "slot": 6,
+  "status": "ok",
+  "error": "",
+  "versions": [],
+  "started_at": "2026-10-01T00:05:35",
+  "mode": "docker",
+  "background_before_cores": 1.28,
+  "run": {
+    "machine": {
+      "os": "Darwin",
+      "os_version": "macOS 27.0",
+      "kernel": "27.0.0",
+      "arch": "arm64",
+      "cpu": "Apple M5 Max",
+      "cores_logical": 18,
+      "cores_physical": 18,
+      "core_types": "6 Super, 12 Performance",
+      "memory_gb": 36.0,
+      "power": "AC power",
+      "python": "3.14.6"
+    },
+    "git": {
+      "commit": "92b273d",
+      "dirty": true
+    },
+    "memory_metric": "container working set (cgroup memory.current minus inactive_file)",
+    "started_at": "2026-09-30T22:28:16",
+    "profile": {
+      "name": "standard",
+      "endpoint_warmup": 2,
+      "endpoint_duration": 8,
+      "levels": [
+        1000,
+        2000,
+        3000,
+        4000,
+        5000,
+        6000
+      ],
+      "ramp_warmup": 10,
+      "ramp_duration": 30,
+      "seed_count": 100000,
+      "description": "the published numbers: 6 user levels (~6 min per stack)"
+    },
+    "cores": 4,
+    "dataset": 110000,
+    "reference": "rust",
+    "stop_p99_ms": 2000,
+    "think_ms": 3000,
+    "edit_pct": 5,
+    "endpoint_clients": 50,
+    "notes": "Docker mode: Debian 13 images, network load generator, quiet-wait before each stack",
+    "busy_threshold": 1.8,
+    "mode": "docker",
+    "docker": {
+      "docker_version": "29.2.1",
+      "engine_os": "Docker Desktop",
+      "engine_arch": "aarch64",
+      "vm_cpus": 18,
+      "vm_memory_gb": 7.7
+    },
+    "loadgen": "network",
+    "memory": "4g"
+  },
+  "build_s": 1.4,
+  "docker": {
+    "image": "stack-benchmark-csharp",
+    "image_id": "sha256:4504216f217b",
+    "image_size": "433MB",
+    "base_image": "debian:trixie-slim",
+    "sqlite_version": "3.53.3",
+    "loadgen": "network"
+  },
+  "conformance": {
+    "ok": true,
+    "checksum": "4757200eff847274560a4359166b3c6977b0fb45b0bd5f7286c11a53a91fc86a"
+  },
+  "startup_ms": 174,
+  "background_idle_cores": 0.31,
+  "processes": 3,
+  "idle_memory_mb": 41.3,
+  "idle_rss_mb": 41.1,
+  "parity": {
+    "ok": true,
+    "summary": "71 identical, 0 mismatched; 42/42 contract checks passed"
+  },
+  "endpoints": [
+    {
+      "label": "Single contact",
+      "path": "/contacts/77777",
+      "result": {
+        "actions_per_s": 0.0,
+        "all": {
+          "count": 497015,
+          "max_ms": 58.049,
+          "p50_ms": 0.619,
+          "p95_ms": 0.997,
+          "p99_ms": 1.333,
+          "req_s": 62126.875
+        },
+        "duration_s": 8,
+        "edit_pct": 5,
+        "endpoint": "/contacts/77777",
+        "error_samples": [],
+        "errors": 0,
+        "kinds": {
+          "endpoint": {
+            "count": 497015,
+            "max_ms": 58.049,
+            "p50_ms": 0.619,
+            "p95_ms": 0.997,
+            "p99_ms": 1.333,
+            "req_s": 62126.875
+          }
+        },
+        "not_modified": 0,
+        "think_ms": 0,
+        "users": 50,
+        "warmup_s": 2
+      }
+    },
+    {
+      "label": "List page 1 (uncached)",
+      "path": "/contacts?limit=60",
+      "result": {
+        "actions_per_s": 0.0,
+        "all": {
+          "count": 137373,
+          "max_ms": 51.328,
+          "p50_ms": 2.277,
+          "p95_ms": 3.217,
+          "p99_ms": 30.341,
+          "req_s": 17171.625
+        },
+        "duration_s": 8,
+        "edit_pct": 5,
+        "endpoint": "/contacts?limit=60",
+        "error_samples": [],
+        "errors": 0,
+        "kinds": {
+          "endpoint": {
+            "count": 137373,
+            "max_ms": 51.328,
+            "p50_ms": 2.277,
+            "p95_ms": 3.217,
+            "p99_ms": 30.341,
+            "req_s": 17171.625
+          }
+        },
+        "not_modified": 0,
+        "think_ms": 0,
+        "users": 50,
+        "warmup_s": 2
+      }
+    },
+    {
+      "label": "List page at offset 55,000",
+      "path": "/contacts?limit=60&offset=55000",
+      "result": {
+        "actions_per_s": 0.0,
+        "all": {
+          "count": 30680,
+          "max_ms": 49.382,
+          "p50_ms": 11.756,
+          "p95_ms": 22.379,
+          "p99_ms": 34.061,
+          "req_s": 3835.0
+        },
+        "duration_s": 8,
+        "edit_pct": 5,
+        "endpoint": "/contacts?limit=60&offset=55000",
+        "error_samples": [],
+        "errors": 0,
+        "kinds": {
+          "endpoint": {
+            "count": 30680,
+            "max_ms": 49.382,
+            "p50_ms": 11.756,
+            "p95_ms": 22.379,
+            "p99_ms": 34.061,
+            "req_s": 3835.0
+          }
+        },
+        "not_modified": 0,
+        "think_ms": 0,
+        "users": 50,
+        "warmup_s": 2
+      }
+    },
+    {
+      "label": "Search `smith` (cached)",
+      "path": "/contacts?limit=60&q=smith",
+      "result": {
+        "actions_per_s": 0.0,
+        "all": {
+          "count": 513158,
+          "max_ms": 5.987,
+          "p50_ms": 0.684,
+          "p95_ms": 1.404,
+          "p99_ms": 1.852,
+          "req_s": 64144.75
+        },
+        "duration_s": 8,
+        "edit_pct": 5,
+        "endpoint": "/contacts?limit=60&q=smith",
+        "error_samples": [],
+        "errors": 0,
+        "kinds": {
+          "endpoint": {
+            "count": 513158,
+            "max_ms": 5.987,
+            "p50_ms": 0.684,
+            "p95_ms": 1.404,
+            "p99_ms": 1.852,
+            "req_s": 64144.75
+          }
+        },
+        "not_modified": 0,
+        "think_ms": 0,
+        "users": 50,
+        "warmup_s": 2
+      }
+    },
+    {
+      "label": "A\u2013Z index (cached)",
+      "path": "/contacts/letters",
+      "result": {
+        "actions_per_s": 0.0,
+        "all": {
+          "count": 848902,
+          "max_ms": 10.53,
+          "p50_ms": 0.416,
+          "p95_ms": 0.858,
+          "p99_ms": 1.083,
+          "req_s": 106112.75
+        },
+        "duration_s": 8,
+        "edit_pct": 5,
+        "endpoint": "/contacts/letters",
+        "error_samples": [],
+        "errors": 0,
+        "kinds": {
+          "endpoint": {
+            "count": 848902,
+            "max_ms": 10.53,
+            "p50_ms": 0.416,
+            "p95_ms": 0.858,
+            "p99_ms": 1.083,
+            "req_s": 106112.75
+          }
+        },
+        "not_modified": 0,
+        "think_ms": 0,
+        "users": 50,
+        "warmup_s": 2
+      }
+    },
+    {
+      "label": "Stats (cached)",
+      "path": "/stats",
+      "result": {
+        "actions_per_s": 0.0,
+        "all": {
+          "count": 1171066,
+          "max_ms": 10.539,
+          "p50_ms": 0.306,
+          "p95_ms": 0.619,
+          "p99_ms": 0.803,
+          "req_s": 146383.25
+        },
+        "duration_s": 8,
+        "edit_pct": 5,
+        "endpoint": "/stats",
+        "error_samples": [],
+        "errors": 0,
+        "kinds": {
+          "endpoint": {
+            "count": 1171066,
+            "max_ms": 10.539,
+            "p50_ms": 0.306,
+            "p95_ms": 0.619,
+            "p99_ms": 0.803,
+            "req_s": 146383.25
+          }
+        },
+        "not_modified": 0,
+        "think_ms": 0,
+        "users": 50,
+        "warmup_s": 2
+      }
+    }
+  ],
+  "ramp": [
+    {
+      "users": 1000,
+      "result": {
+        "actions_per_s": 328.9,
+        "all": {
+          "count": 19002,
+          "max_ms": 42.626,
+          "p50_ms": 0.352,
+          "p95_ms": 6.589,
+          "p99_ms": 12.381,
+          "req_s": 633.4
+        },
+        "duration_s": 30,
+        "edit_pct": 5,
+        "endpoint": null,
+        "error_samples": [],
+        "errors": 0,
+        "kinds": {
+          "contact": {
+            "count": 3006,
+            "max_ms": 11.285,
+            "p50_ms": 0.202,
+            "p95_ms": 0.778,
+            "p99_ms": 3.075,
+            "req_s": 100.2
+          },
+          "letters": {
+            "count": 1058,
+            "max_ms": 16.193,
+            "p50_ms": 4.207,
+            "p95_ms": 9.644,
+            "p99_ms": 12.683,
+            "req_s": 35.266666666666666
+          },
+          "list": {
+            "count": 4553,
+            "max_ms": 42.626,
+            "p50_ms": 0.771,
+            "p95_ms": 9.694,
+            "p99_ms": 29.748,
+            "req_s": 151.76666666666668
+          },
+          "search": {
+            "count": 4335,
+            "max_ms": 15.274,
+            "p50_ms": 0.337,
+            "p95_ms": 6.301,
+            "p99_ms": 9.773,
+            "req_s": 144.5
+          },
+          "search-letters": {
+            "count": 4335,
+            "max_ms": 13.508,
+            "p50_ms": 0.186,
+            "p95_ms": 3.618,
+            "p99_ms": 6.233,
+            "req_s": 144.5
+          },
+          "stats": {
+            "count": 587,
+            "max_ms": 14.14,
+            "p50_ms": 6.211,
+            "p95_ms": 8.707,
+            "p99_ms": 10.713,
+            "req_s": 19.566666666666666
+          },
+          "tags": {
+            "count": 587,
+            "max_ms": 11.195,
+            "p50_ms": 4.817,
+            "p95_ms": 7.458,
+            "p99_ms": 10.498,
+            "req_s": 19.566666666666666
+          },
+          "write": {
+            "count": 541,
+            "max_ms": 17.638,
+            "p50_ms": 0.44,
+            "p95_ms": 3.17,
+            "p99_ms": 15.598,
+            "req_s": 18.033333333333335
+          }
+        },
+        "not_modified": 2317,
+        "think_ms": 3000,
+        "users": 1000,
+        "warmup_s": 10
+      },
+      "cpu_cores": 0.77,
+      "background_cores": 2.87,
+      "rss_mb": 146.5,
+      "memory_after_mb": 161.0,
+      "server_alive": true,
+      "throttled_pct": 0.0,
+      "throttled_ms_per_s": 0.0,
+      "docker_host_cores": 0.97
+    },
+    {
+      "users": 2000,
+      "result": {
+        "actions_per_s": 650.2,
+        "all": {
+          "count": 37823,
+          "max_ms": 36.268,
+          "p50_ms": 0.343,
+          "p95_ms": 5.398,
+          "p99_ms": 10.05,
+          "req_s": 1260.7666666666667
+        },
+        "duration_s": 30,
+        "edit_pct": 5,
+        "endpoint": null,
+        "error_samples": [],
+        "errors": 0,
+        "kinds": {
+          "contact": {
+            "count": 5848,
+            "max_ms": 7.973,
+            "p50_ms": 0.207,
+            "p95_ms": 1.676,
+            "p99_ms": 3.913,
+            "req_s": 194.93333333333334
+          },
+          "letters": {
+            "count": 2082,
+            "max_ms": 13.02,
+            "p50_ms": 3.757,
+            "p95_ms": 8.127,
+            "p99_ms": 10.132,
+            "req_s": 69.4
+          },
+          "list": {
+            "count": 8964,
+            "max_ms": 36.268,
+            "p50_ms": 0.655,
+            "p95_ms": 6.382,
+            "p99_ms": 21.671,
+            "req_s": 298.8
+          },
+          "search": {
+            "count": 8797,
+            "max_ms": 15.623,
+            "p50_ms": 0.326,
+            "p95_ms": 4.507,
+            "p99_ms": 8.119,
+            "req_s": 293.23333333333335
+          },
+          "search-letters": {
+            "count": 8797,
+            "max_ms": 10.51,
+            "p50_ms": 0.228,
+            "p95_ms": 2.347,
+            "p99_ms": 4.758,
+            "req_s": 293.23333333333335
+          },
+          "stats": {
+            "count": 1139,
+            "max_ms": 12.712,
+            "p50_ms": 5.378,
+            "p95_ms": 7.668,
+            "p99_ms": 9.333,
+            "req_s": 37.96666666666667
+          },
+          "tags": {
+            "count": 1139,
+            "max_ms": 15.899,
+            "p50_ms": 3.986,
+            "p95_ms": 6.698,
+            "p99_ms": 8.611,
+            "req_s": 37.96666666666667
+          },
+          "write": {
+            "count": 1057,
+            "max_ms": 16.191,
+            "p50_ms": 0.403,
+            "p95_ms": 1.345,
+            "p99_ms": 11.42,
+            "req_s": 35.233333333333334
+          }
+        },
+        "not_modified": 4601,
+        "think_ms": 3000,
+        "users": 2000,
+        "warmup_s": 10
+      },
+      "cpu_cores": 1.18,
+      "background_cores": 2.36,
+      "rss_mb": 216.7,
+      "memory_after_mb": 226.6,
+      "server_alive": true,
+      "throttled_pct": 0.0,
+      "throttled_ms_per_s": 0.0,
+      "docker_host_cores": 1.49
+    },
+    {
+      "users": 3000,
+      "result": {
+        "actions_per_s": 981.5333333333333,
+        "all": {
+          "count": 57072,
+          "max_ms": 36.425,
+          "p50_ms": 0.352,
+          "p95_ms": 5.179,
+          "p99_ms": 9.82,
+          "req_s": 1902.4
+        },
+        "duration_s": 30,
+        "edit_pct": 5,
+        "endpoint": null,
+        "error_samples": [],
+        "errors": 0,
+        "kinds": {
+          "contact": {
+            "count": 8840,
+            "max_ms": 11.263,
+            "p50_ms": 0.228,
+            "p95_ms": 2.268,
+            "p99_ms": 4.741,
+            "req_s": 294.6666666666667
+          },
+          "letters": {
+            "count": 3095,
+            "max_ms": 16.969,
+            "p50_ms": 3.632,
+            "p95_ms": 8.216,
+            "p99_ms": 10.242,
+            "req_s": 103.16666666666667
+          },
+          "list": {
+            "count": 13439,
+            "max_ms": 36.425,
+            "p50_ms": 0.645,
+            "p95_ms": 6.792,
+            "p99_ms": 20.184,
+            "req_s": 447.96666666666664
+          },
+          "search": {
+            "count": 13366,
+            "max_ms": 14.728,
+            "p50_ms": 0.331,
+            "p95_ms": 3.958,
+            "p99_ms": 7.419,
+            "req_s": 445.53333333333336
+          },
+          "search-letters": {
+            "count": 13366,
+            "max_ms": 12.119,
+            "p50_ms": 0.255,
+            "p95_ms": 1.982,
+            "p99_ms": 4.448,
+            "req_s": 445.53333333333336
+          },
+          "stats": {
+            "count": 1701,
+            "max_ms": 15.378,
+            "p50_ms": 5.087,
+            "p95_ms": 7.822,
+            "p99_ms": 10.398,
+            "req_s": 56.7
+          },
+          "tags": {
+            "count": 1701,
+            "max_ms": 13.652,
+            "p50_ms": 3.787,
+            "p95_ms": 6.813,
+            "p99_ms": 9.158,
+            "req_s": 56.7
+          },
+          "write": {
+            "count": 1564,
+            "max_ms": 15.344,
+            "p50_ms": 0.403,
+            "p95_ms": 3.895,
+            "p99_ms": 11.365,
+            "req_s": 52.13333333333333
+          }
+        },
+        "not_modified": 6887,
+        "think_ms": 3000,
+        "users": 3000,
+        "warmup_s": 10
+      },
+      "cpu_cores": 1.57,
+      "background_cores": 2.27,
+      "rss_mb": 252.7,
+      "memory_after_mb": 261.0,
+      "server_alive": true,
+      "throttled_pct": 0.0,
+      "throttled_ms_per_s": 0.0,
+      "docker_host_cores": 1.98
+    },
+    {
+      "users": 4000,
+      "result": {
+        "actions_per_s": 1314.9333333333334,
+        "all": {
+          "count": 76634,
+          "max_ms": 35.557,
+          "p50_ms": 0.363,
+          "p95_ms": 5.243,
+          "p99_ms": 9.59,
+          "req_s": 2554.4666666666667
+        },
+        "duration_s": 30,
+        "edit_pct": 5,
+        "endpoint": null,
+        "error_samples": [],
+        "errors": 0,
+        "kinds": {
+          "contact": {
+            "count": 11817,
+            "max_ms": 10.857,
+            "p50_ms": 0.236,
+            "p95_ms": 3.035,
+            "p99_ms": 5.359,
+            "req_s": 393.9
+          },
+          "letters": {
+            "count": 4198,
+            "max_ms": 16.513,
+            "p50_ms": 3.504,
+            "p95_ms": 8.087,
+            "p99_ms": 10.111,
+            "req_s": 139.93333333333334
+          },
+          "list": {
+            "count": 17952,
+            "max_ms": 35.557,
+            "p50_ms": 0.666,
+            "p95_ms": 6.657,
+            "p99_ms": 17.037,
+            "req_s": 598.4
+          },
+          "search": {
+            "count": 18031,
+            "max_ms": 14.624,
+            "p50_ms": 0.333,
+            "p95_ms": 3.519,
+            "p99_ms": 7.307,
+            "req_s": 601.0333333333333
+          },
+          "search-letters": {
+            "count": 18031,
+            "max_ms": 11.673,
+            "p50_ms": 0.253,
+            "p95_ms": 1.943,
+            "p99_ms": 4.398,
+            "req_s": 601.0333333333333
+          },
+          "stats": {
+            "count": 2261,
+            "max_ms": 15.383,
+            "p50_ms": 5.143,
+            "p95_ms": 8.145,
+            "p99_ms": 10.791,
+            "req_s": 75.36666666666666
+          },
+          "tags": {
+            "count": 2261,
+            "max_ms": 13.41,
+            "p50_ms": 3.643,
+            "p95_ms": 6.799,
+            "p99_ms": 9.026,
+            "req_s": 75.36666666666666
+          },
+          "write": {
+            "count": 2083,
+            "max_ms": 15.267,
+            "p50_ms": 0.406,
+            "p95_ms": 2.96,
+            "p99_ms": 11.194,
+            "req_s": 69.43333333333334
+          }
+        },
+        "not_modified": 9271,
+        "think_ms": 3000,
+        "users": 4000,
+        "warmup_s": 10
+      },
+      "cpu_cores": 1.91,
+      "background_cores": 2.45,
+      "rss_mb": 298.8,
+      "memory_after_mb": 301.4,
+      "server_alive": true,
+      "throttled_pct": 0.0,
+      "throttled_ms_per_s": 0.0,
+      "docker_host_cores": 2.41
+    },
+    {
+      "users": 5000,
+      "result": {
+        "actions_per_s": 1643.5,
+        "all": {
+          "count": 95334,
+          "max_ms": 41.965,
+          "p50_ms": 0.46,
+          "p95_ms": 8.011,
+          "p99_ms": 13.283,
+          "req_s": 3177.8
+        },
+        "duration_s": 30,
+        "edit_pct": 5,
+        "endpoint": null,
+        "error_samples": [],
+        "errors": 0,
+        "kinds": {
+          "contact": {
+            "count": 14706,
+            "max_ms": 23.064,
+            "p50_ms": 0.399,
+            "p95_ms": 6.432,
+            "p99_ms": 10.52,
+            "req_s": 490.2
+          },
+          "letters": {
+            "count": 5150,
+            "max_ms": 27.983,
+            "p50_ms": 3.806,
+            "p95_ms": 9.741,
+            "p99_ms": 14.31,
+            "req_s": 171.66666666666666
+          },
+          "list": {
+            "count": 22420,
+            "max_ms": 41.965,
+            "p50_ms": 1.098,
+            "p95_ms": 10.245,
+            "p99_ms": 23.599,
+            "req_s": 747.3333333333334
+          },
+          "search": {
+            "count": 22508,
+            "max_ms": 25.548,
+            "p50_ms": 0.376,
+            "p95_ms": 6.007,
+            "p99_ms": 10.867,
+            "req_s": 750.2666666666667
+          },
+          "search-letters": {
+            "count": 22508,
+            "max_ms": 19.706,
+            "p50_ms": 0.296,
+            "p95_ms": 3.775,
+            "p99_ms": 7.983,
+            "req_s": 750.2666666666667
+          },
+          "stats": {
+            "count": 2750,
+            "max_ms": 28.264,
+            "p50_ms": 6.886,
+            "p95_ms": 12.423,
+            "p99_ms": 15.997,
+            "req_s": 91.66666666666667
+          },
+          "tags": {
+            "count": 2750,
+            "max_ms": 24.897,
+            "p50_ms": 4.079,
+            "p95_ms": 9.747,
+            "p99_ms": 13.447,
+            "req_s": 91.66666666666667
+          },
+          "write": {
+            "count": 2542,
+            "max_ms": 17.72,
+            "p50_ms": 0.446,
+            "p95_ms": 5.152,
+            "p99_ms": 11.51,
+            "req_s": 84.73333333333333
+          }
+        },
+        "not_modified": 11336,
+        "think_ms": 3000,
+        "users": 5000,
+        "warmup_s": 10
+      },
+      "cpu_cores": 2.71,
+      "background_cores": 2.17,
+      "rss_mb": 349.4,
+      "memory_after_mb": 347.3,
+      "server_alive": true,
+      "throttled_pct": 1.3,
+      "throttled_ms_per_s": 1.3,
+      "docker_host_cores": 3.34
+    },
+    {
+      "users": 6000,
+      "result": {
+        "actions_per_s": 1969.3,
+        "all": {
+          "count": 114068,
+          "max_ms": 70.549,
+          "p50_ms": 0.464,
+          "p95_ms": 10.851,
+          "p99_ms": 20.359,
+          "req_s": 3802.266666666667
+        },
+        "duration_s": 30,
+        "edit_pct": 5,
+        "endpoint": null,
+        "error_samples": [],
+        "errors": 0,
+        "kinds": {
+          "contact": {
+            "count": 17717,
+            "max_ms": 41.648,
+            "p50_ms": 0.922,
+            "p95_ms": 11.628,
+            "p99_ms": 20.915,
+            "req_s": 590.5666666666667
+          },
+          "letters": {
+            "count": 6141,
+            "max_ms": 43.908,
+            "p50_ms": 3.856,
+            "p95_ms": 13.457,
+            "p99_ms": 22.336,
+            "req_s": 204.7
+          },
+          "list": {
+            "count": 26823,
+            "max_ms": 70.549,
+            "p50_ms": 1.654,
+            "p95_ms": 14.552,
+            "p99_ms": 28.898,
+            "req_s": 894.1
+          },
+          "search": {
+            "count": 26900,
+            "max_ms": 39.556,
+            "p50_ms": 0.382,
+            "p95_ms": 5.678,
+            "p99_ms": 13.282,
+            "req_s": 896.6666666666666
+          },
+          "search-letters": {
+            "count": 26900,
+            "max_ms": 34.153,
+            "p50_ms": 0.29,
+            "p95_ms": 3.195,
+            "p99_ms": 10.331,
+            "req_s": 896.6666666666666
+          },
+          "stats": {
+            "count": 3275,
+            "max_ms": 43.568,
+            "p50_ms": 7.469,
+            "p95_ms": 17.809,
+            "p99_ms": 27.234,
+            "req_s": 109.16666666666667
+          },
+          "tags": {
+            "count": 3275,
+            "max_ms": 38.986,
+            "p50_ms": 4.415,
+            "p95_ms": 14.648,
+            "p99_ms": 23.808,
+            "req_s": 109.16666666666667
+          },
+          "write": {
+            "count": 3037,
+            "max_ms": 17.699,
+            "p50_ms": 0.481,
+            "p95_ms": 4.626,
+            "p99_ms": 11.43,
+            "req_s": 101.23333333333333
+          }
+        },
+        "not_modified": 13523,
+        "think_ms": 3000,
+        "users": 6000,
+        "warmup_s": 10
+      },
+      "cpu_cores": 3.17,
+      "background_cores": 3.2,
+      "rss_mb": 385.2,
+      "memory_after_mb": 378.9,
+      "server_alive": true,
+      "throttled_pct": 11.8,
+      "throttled_ms_per_s": 26.0,
+      "docker_host_cores": 3.95
+    }
+  ],
+  "seed": {
+    "ok": true,
+    "count": 100000,
+    "insert_ms": 3523.3,
+    "per_sec": 28383,
+    "wall_s": 3.76
+  },
+  "finished_at": "2026-10-01T00:12:31"
+}

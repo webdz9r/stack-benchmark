@@ -94,6 +94,23 @@ back to back); with workers there are none.
   the amalgamation has no `SQLITE_ENABLE_MEMORY_MANAGEMENT`.
 - **Tools:** macOS `sample <pid> 8`. See [`docs/optimizing.md`](../../docs/optimizing.md).
 
+## Bugs found
+
+- **Unterminated empty strings** (fixed): `buf_take` on an empty buffer returned
+  freshly allocated memory without a `\0`, so a contact row sent without a
+  label could get a garbage label instead of `other`. macOS's allocator usually
+  hands back zeroed memory, which hid it; it showed up as a parity failure in
+  Docker (Linux, glibc).
+- **`make -j` race** (fixed): the SQLite download rule produced two targets, so
+  a parallel build could run it twice at once.
+
+## Docker
+
+`Dockerfile` builds this stack on Debian 13 slim with the same settings as
+native ([07-containers.md](../../docs/requirements/07-containers.md)).
+Run it with `docker compose --profile c up --build` from the repo root, or
+benchmark it with `python3 bench/run.py --mode docker --stacks c`.
+
 ## Verify and benchmark
 
 ```sh

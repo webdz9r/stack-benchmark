@@ -105,6 +105,13 @@ What we found (see also [`docs/optimizing.md`](../../docs/optimizing.md)):
   ramp. JFR (`JAVA_OPTS="-XX:StartFlightRecording=duration=60s,filename=rec.jfr"`)
   and async-profiler for CPU, `jcmd <pid> Thread.print` for thread waits.
 
+## Docker
+
+`Dockerfile` builds this stack on Debian 13 slim with the same settings as
+native ([07-containers.md](../../docs/requirements/07-containers.md)). There's no JDK 27 image yet, so Eclipse Temurin 27 (JDK to build, JRE to run) is installed on `debian:trixie-slim`.
+Run it with `docker compose --profile java-spring up --build` from the repo root, or
+benchmark it with `python3 bench/run.py --mode docker --stacks java-spring`.
+
 ## Verify and benchmark
 
 ```sh

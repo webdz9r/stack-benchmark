@@ -102,6 +102,43 @@ is slower than an M5 core. The C# and Java runs were flagged because other
 programs were busy during their low-user levels, so rerun them before quoting
 them. Your own numbers are one command away (see [Running it](#running-it)).
 
+### In Docker
+
+The same benchmark with every stack in a Debian 13 container, held to
+`--cpus=4` by the kernel, with the load generator on the Docker network (same
+Mac, Docker Desktop). These are a separate set of numbers: never compare a
+Docker figure with a native one in the same breath.
+
+| Stack | Capacity in Docker | Native | Throttled at 5,000 users |
+| --- | ---: | ---: | ---: |
+| C# (ASP.NET Core) | ≥ 6,000 | ≥ 6,000 | 1% |
+| C (libmicrohttpd) | ≥ 6,000 | ≥ 6,000 | 11% |
+| Go (net/http) | ~5,300 | ~5,500 | 14% |
+| Rust (Axum) | ~5,250 | ~5,100 | 26% |
+| Node (Fastify) | ~4,850 | ~5,050 | 62% |
+| Java (Spring Boot) | ~4,700 | ~5,600 | 62% |
+| Rails (direct SQL) | ~2,850 | ~3,000 | 38% |
+| Python (FastAPI) | ~2,050 | ~3,050 | 100% from 3,000 users |
+| Rails + ActiveRecord | ~1,150 | ~1,950 | 57% from 2,000 users |
+
+What it shows:
+- **Docker enforces the budget; native mode doesn't fully.** Python used ~11
+  cores at 4,000 users natively. In a container it gets exactly 4, so ~2,050 is
+  its honest 4-core capacity.
+- **Bursty runtimes pay for the quota.** "Throttled" is the share of 100 ms
+  slices in which the kernel paused the container for exceeding 4 CPUs. Stacks
+  with garbage collectors, JITs or helper threads (Java, Node, Rails) burst
+  past it and lose tail latency even when their average CPU is under 4.
+- **Every stack passes the seed checksum and parity in its container.** Running
+  on Linux also exposed a real bug in the C backend that macOS had hidden
+  (see [`backend/c/README.md`](backend/c/README.md#bugs-found)).
+
+Reports: [`results/docker/summary.md`](results/docker/summary.md). These runs
+were flagged busy: macOS's own background indexing (`corespotlightd`,
+`mediaanalysisd`) kept starting while the machine was idle overnight, so treat
+the exact numbers as noisy; the pattern above held across two full runs. How
+Docker mode works: [`bench/README.md`](bench/README.md#docker-mode).
+
 ## What we learned about performance
 
 The first versions of most stacks had one avoidable bottleneck, and it was
@@ -235,6 +272,21 @@ Each stack's build and run commands, settings and notes are in its README:
 [Python](backend/python/README.md) · [Rails](backend/rails/README.md).
 More on the suite in [`bench/README.md`](bench/README.md).
 
+### With Docker
+
+Every stack also has a Dockerfile (Debian 13 slim, same settings as native), so
+you can run or benchmark any of them with nothing but Docker installed:
+
+```sh
+docker compose --profile rust up --build              # API + UI on http://127.0.0.1:7878
+docker compose --profile rust run --rm rust seed 110000
+python3 bench/run.py --mode docker                    # benchmark every stack in containers
+```
+
+Docker results go to `results/docker/` and are never mixed with native ones.
+The image rules are in [07-containers.md](docs/requirements/07-containers.md);
+how containers are measured is in [`bench/README.md`](bench/README.md#docker-mode).
+
 ## Repository layout
 
 ```
@@ -251,11 +303,12 @@ backend/
 frontend/            Vue 3 + Tailwind demo UI
 loadtest/            simulated-user and single-endpoint load generator (Rust)
 bench/               benchmark suite, report renderer, parity check
-results/             published reference results (summary + one report per stack)
+results/             published reference results (summary + one report per stack; docker/ for Docker mode)
+compose.yaml         run any stack in Docker by hand
 logs/                benchmark progress log (git-ignored)
 docs/
   requirements/      the spec every backend is built from
   optimizing.md      how to find and fix a stack's bottlenecks
-  plans/             what's planned next, e.g. running every stack in Docker
+  plans/             what's planned next, and how Docker mode was planned
 CLAUDE.md            instructions for AI assistants working in this repo
 ```

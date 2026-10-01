@@ -151,3 +151,9 @@ Verification (this document)
 - [ ] **VER-3** load test smoke run without errors
 - [ ] **VER-4/5/6** `bench.json` manifest added, quick profile passes, READMEs updated (with an Optimizing section)
 - [ ] **VER-7** compared with the existing stacks; any large gap investigated ([`docs/optimizing.md`](../optimizing.md))
+
+Containers ([07](07-containers.md))
+- [ ] `backend/<stack>/Dockerfile`: repo-root context, multi-stage, Debian 13 slim runtime, no budget variables (CTR-1..5)
+- [ ] Repository layout under `/app`, `/app/sqlite-version` written, entrypoint `serve` / `seed <count>` (CTR-6, 7, 9)
+- [ ] `docker` block in `bench.json`; listens on `0.0.0.0` in the container (CTR-10, 14)
+- [ ] VER-1 and VER-2 pass in Docker mode: `bench/run.py --mode docker --stacks <stack> --profile quick`

@@ -56,6 +56,13 @@ Findings so far (see also [`docs/optimizing.md`](../../docs/optimizing.md)):
   `Db::read` timing `pool.get()` wait against query time showed the read pool
   was the queue.
 
+## Docker
+
+`Dockerfile` builds this stack on Debian 13 slim with the same settings as
+native ([07-containers.md](../../docs/requirements/07-containers.md)).
+Run it with `docker compose --profile rust up --build` from the repo root, or
+benchmark it with `python3 bench/run.py --mode docker --stacks rust`.
+
 ## Verify and benchmark
 
 ```sh

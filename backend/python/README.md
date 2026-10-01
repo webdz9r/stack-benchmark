@@ -64,6 +64,13 @@ DB_READERS=4 uv run uvicorn app.main:app --port 7879 --workers 4 --loop uvloop -
   `ps -o pcpu`). `__psynch_mutexwait` high in the sample means lock
   contention. See [`docs/optimizing.md`](../../docs/optimizing.md).
 
+## Docker
+
+`Dockerfile` builds this stack on Debian 13 slim with the same settings as
+native ([07-containers.md](../../docs/requirements/07-containers.md)). Python's image links Debian's own SQLite (3.46.1), not the newer one Homebrew provides natively; the report shows the version.
+Run it with `docker compose --profile python up --build` from the repo root, or
+benchmark it with `python3 bench/run.py --mode docker --stacks python`.
+
 ## Verify and benchmark
 
 ```sh

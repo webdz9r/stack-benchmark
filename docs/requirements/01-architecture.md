@@ -22,7 +22,7 @@ operator has to edit.
 | Variable | Default | Meaning | Req |
 | --- | --- | --- | --- |
 | `DATABASE_PATH` | `data/address-book.db` (relative to the working directory, which is the stack folder) | SQLite file. The file and any missing parent directories MUST be created if absent. | **ARCH-5** MUST |
-| `BIND_ADDR` or `PORT` | `127.0.0.1:<stack port>` | Listen address. Default to loopback, not `0.0.0.0`. | **ARCH-6** MUST be configurable: by one of these variables, or by the server's own command-line flag (uvicorn's `--port`, for example) set in the stack's `bench.json` `start` command |
+| `BIND_ADDR` or `PORT` (+ `HOST`) | `127.0.0.1:<stack port>` | Listen address. Default to loopback, not `0.0.0.0`. | **ARCH-6** MUST be configurable, **host included** (containers listen on `0.0.0.0`, CTR-10): by these variables, or by the server's own settings (uvicorn's `--host`/`--port` or `UVICORN_HOST`/`UVICORN_PORT`, for example) |
 | `STATIC_DIR` | `../../frontend/dist` | Built frontend to serve, if `index.html` exists there | **ARCH-7** MUST |
 | `DB_READERS` | CPU count | Size of the read connection pool | **ARCH-8** SHOULD, where the stack has a pool |
 | stack-specific concurrency knob | CPU count | Worker threads/processes (e.g. `TOKIO_WORKER_THREADS`, `GOMAXPROCS`, `WORKERS`, `WEB_CONCURRENCY`) | **ARCH-9** MUST |

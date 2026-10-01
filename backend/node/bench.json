@@ -19,5 +19,12 @@
     "PORT": "{port}",
     "DB_READERS": "{cores}"
   },
-  "concurrency": "1 process: event loop + {cores} reader threads + 1 writer thread"
+  "concurrency": "1 process: event loop + {cores} reader threads + 1 writer thread",
+  "docker": {
+    "start": "serve",
+    "seed": "seed {count}",
+    "env": {
+      "HOST": "0.0.0.0"
+    }
+  }
 }

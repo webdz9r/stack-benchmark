@@ -42,6 +42,27 @@ class Server:
     def alive(self) -> bool:
         return self.proc.poll() is None
 
+    # The measurement interface the runner uses; containers.ContainerServer has the same.
+    def cpu_seconds(self) -> float:
+        return cpu_seconds(self.pids())
+
+    def cpu_stat(self) -> dict[str, int]:
+        return {}
+
+    def rss_mb(self) -> float:
+        return rss_mb(self.pids())
+
+    def footprint_mb(self) -> float:
+        """Between load runs only: vmmap pauses the process (see footprint_mb)."""
+        return footprint_mb(self.pids())
+
+    def process_count(self) -> int:
+        return len(self.pids())
+
+    def host_pids(self) -> list[int]:
+        """Host processes whose CPU is this server's, left out of the busy-machine check."""
+        return self.pids()
+
     def stop(self) -> None:
         """Ctrl-C the whole group, escalating to SIGTERM and then SIGKILL."""
         for sig in (signal.SIGINT, signal.SIGTERM, signal.SIGKILL):

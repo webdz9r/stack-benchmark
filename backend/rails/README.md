@@ -81,6 +81,13 @@ Findings (see also [`docs/optimizing.md`](../../docs/optimizing.md)):
   `ActiveSupport::Notifications.subscribe("sql.active_record")` probe that
   times queries by SQL shape (dumped on a signal); `ps -o pcpu` per worker.
 
+## Docker
+
+`Dockerfile` builds this stack on Debian 13 slim with the same settings as
+native ([07-containers.md](../../docs/requirements/07-containers.md)). One image serves both variants; `RAILS_DATA` picks the data layer, and `HOST=0.0.0.0` makes Puma listen outside the container.
+Run it with `docker compose --profile rails up --build` from the repo root, or
+benchmark it with `python3 bench/run.py --mode docker --stacks rails`.
+
 ## Verify and benchmark
 
 ```sh
