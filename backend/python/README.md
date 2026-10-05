@@ -1,15 +1,15 @@
 # Python
 
 Python 3.14, FastAPI, uvicorn (uvloop and httptools), the standard `sqlite3`
-module, and orjson. It runs as several worker processes, each with a small
-thread pool.
+module, and orjson. It runs as several worker processes. Each one serves reads
+on its event loop and writes on a single thread.
 
 ## Run
 
 ```sh
 uv sync
 uv run python seed.py 110000                  # optional: fake contacts
-DB_READERS=4 uv run uvicorn app.main:app --port 7879 --workers 4 --loop uvloop --http httptools --no-access-log
+uv run uvicorn app.main:app --port 7879 --workers 4 --loop uvloop --http httptools --no-access-log --timeout-keep-alive 120
 ```
 
 | Setting | Default | |
@@ -17,14 +17,13 @@ DB_READERS=4 uv run uvicorn app.main:app --port 7879 --workers 4 --loop uvloop -
 | `DATABASE_PATH` | `data/address-book.db` | SQLite file |
 | `--port`, `--workers` | (uvicorn flags) | listen port and worker processes (the core budget); ARCH-6 allows a CLI flag |
 | `STATIC_DIR` | `../../frontend/dist` | built frontend |
-| `DB_READERS` | `4` | handler threads per worker, each with its own read connection |
 
 ## Notes and deviations
 
-- **More than the core budget:** SQLite and gzip release the GIL, so a worker's
-  threads can use more than one core. Keep this in mind when comparing results.
-  (Before the DB-2 fix below, 4 workers reached about 13 cores under overload,
-  most of it threads handing a SQLite mutex back and forth.)
+- **No `DB_READERS` (ARCH-8):** read handlers are `async def` and run on the
+  worker's event loop, on one read connection per worker. The pool is the
+  worker processes. Write handlers are plain `def` on a one-thread pool, so a
+  write waiting on another worker's lock (busy_timeout) doesn't stall the loop.
 - Each worker has its own response cache, and detects writes by any process
   through `PRAGMA data_version` (CACHE-10).
 - **DB-2 at runtime:** the `sqlite3` module uses the SQLite Python was built
@@ -49,9 +48,9 @@ DB_READERS=4 uv run uvicorn app.main:app --port 7879 --workers 4 --loop uvloop -
   users. The setting must be applied before `import sqlite3`; after the import
   `sqlite3_config` returns 21 (`SQLITE_MISUSE`). Confirm it took effect with
   `sqlite3_memory_used()`, which stays 0 when statistics are off.
-- **Still over the core budget:** under overload (4,000+ users) the 4 workers
-  use 11–15 cores. Most likely the remaining page-cache lock from
-  `ENABLE_MEMORY_MANAGEMENT`, plus the GIL handing off between threads. A
+- **Over the core budget (native, before reads moved to the event loop):**
+  under overload (4,000+ users) the 4 workers used 11–15 cores. Most likely
+  the remaining page-cache lock from `ENABLE_MEMORY_MANAGEMENT`, plus the GIL handing off between threads. A
   Python linked to a SQLite built without it is worth trying next: uv's
   free-threaded 3.14t build compiles in a SQLite 3.50.4 without it (its regular
   builds weren't checked).
@@ -60,6 +59,35 @@ DB_READERS=4 uv run uvicorn app.main:app --port 7879 --workers 4 --loop uvloop -
   get far more connections than others (34 vs 9 seen). Check with
   `lsof -a -p <pid> -iTCP -sTCP:ESTABLISHED` per worker.
 - **Tried, didn't help:** one free-threaded process (see Notes).
+- **Reads on the event loop, not a thread pool:** the biggest fix in Docker.
+  Reads used to be plain `def` on 4 threads per worker, on the theory that
+  sqlite3 releases the GIL so queries overlap. But it drops and retakes the GIL
+  on every row, so the handler threads and the event loop queued for it (up to
+  the 5 ms switch interval each time), and under `--cpus=4` the 4 workers ×
+  ~7 threads were throttled 100% from 3,000 users. Docker single endpoints, same
+  machine: single contact 5,000 → 53,700 req/s, list page 1,250 → 13,100,
+  cached A–Z index 15,200 → 46,500. Just `DB_READERS=1` (one thread) got
+  13,200 / 6,100 / 15,700: the hop itself was the rest. In the suite (Docker,
+  standard profile, 2026-10-05): ~2,050 → ~2,450 users at p99 ≈ 100 ms,
+  single contact 5,800 → 59,000 req/s, list page 1,400 → 14,900. The cost:
+  p99 at 1,000 users rose from 11 to 29 ms, since a slow search now holds up
+  its worker, and past capacity it degrades more steeply than Rails.
+- **Writes stay on a thread:** on the loop, a write that hits another
+  worker's lock sleeps in SQLite's busy handler and stalls every request on that
+  worker (p99 297 ms at 2,000 users). On a thread, it waits up to the GIL switch
+  interval for each step while holding the write lock;
+  `sys.setswitchinterval(0.0005)` cut write p99 at 1,000 users from ~45 ms to
+  ~22 ms (A/B, two rounds).
+- **Tried, didn't help: cache misses on a thread pool.** Keeping hits on the
+  loop and sending misses (1–40 ms aggregates and searches) to 2 threads fixed
+  the low-load tail (p99 13 ms at 1,000 users), but searches are mostly misses,
+  and on threads they queued for the GIL: p50 ~700 ms at 3,000 users. Inline
+  costs some fairness instead: a 30 ms search for a one-letter prefix holds up
+  that worker, as it would a Rails worker.
+- **Keep-alive 120 s:** uvicorn closes idle connections after 5 s, but the load
+  generator's client pools them for 90 s, so a request sent as the server
+  closed was reset (a few per run). Rare, so the evidence is thin: 0 resets
+  in 5 runs after, 2 in 12 before.
 - **Tools:** macOS `sample <worker pid> 5` (pick the busiest worker with
   `ps -o pcpu`). `__psynch_mutexwait` high in the sample means lock
   contention. See [`docs/optimizing.md`](../../docs/optimizing.md).

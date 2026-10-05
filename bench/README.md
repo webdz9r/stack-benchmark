@@ -181,8 +181,8 @@ isn't enough for an hour-long run.
   records `throttled_pct` (slices in which it was paused) and
   `throttled_ms_per_s`, and the report shows them next to CPU.
 - **Native mode's budget is softer.** Natively, the budget is only the runtime's
-  own settings, and some stacks spread past it (Python reached ~11 cores at
-  4,000 users). In Docker, the cgroup holds every stack to exactly `--cpus`, so
+  own settings, and some stacks spread past it (Python, on its old thread-pool
+  design, reached ~11 cores at 4,000 users). In Docker, the cgroup holds every stack to exactly `--cpus`, so
   Docker numbers are the stricter 4-core comparison.
 - **Requirements:** give Docker at least `cores + 2` CPUs (the runner warns
   otherwise), and stop other containers before a publishable run: they share the

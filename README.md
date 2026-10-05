@@ -94,7 +94,7 @@ Each stack in its Debian 13 container, held to exactly 4 CPUs by the kernel
 | Node (Fastify) | ~4,850 | 38,000 req/s | 14,700 req/s | 91 MB | 62% |
 | Java (Spring Boot) | ~4,700 | 34,100 req/s | 13,100 req/s | 176 MB | 62% |
 | Rails (direct SQL) | ~2,850 | 15,400 req/s | 8,400 req/s | 116 MB | 38% |
-| Python (FastAPI) | ~2,050 | 5,800 req/s | 1,400 req/s | 228 MB | 100% from 3,000 users |
+| Python (FastAPI) | ~2,450 | 59,000 req/s | 14,900 req/s | 222 MB | 78% at 4,000 users |
 | Rails + ActiveRecord | ~1,150 | 4,400 req/s | 1,300 req/s | 116 MB | 57% from 2,000 users |
 
 **Throttled** is the share of 100 ms slices in which the kernel paused the
@@ -107,7 +107,10 @@ Full reports: [`results/summary.md`](results/summary.md), with each stack's
 report a click away (for example [Rust](results/rust/report.md)). These runs
 were flagged busy: macOS's own background indexing (`corespotlightd`,
 `mediaanalysisd`) kept starting while the machine sat idle overnight, so treat
-the exact numbers as noisy. The pattern held across two full runs.
+the exact numbers as noisy. The pattern held across two full runs. Python was
+rerun on its own on 2026-10-05, after its reads moved to the event loop (see
+below); that run was quiet. In a same-day rerun next to it, Rails reached
+~2,300 (flagged busy), so treat the two as roughly level.
 
 ### Native
 
@@ -126,9 +129,10 @@ cores by its runtime settings only (`GOMAXPROCS=4`, 4 workers, and so on).
 | Rails (direct SQL) | ~3,000 | 18,900 req/s | 11,200 req/s | 199 MB |
 | Rails + ActiveRecord | ~1,950 | 5,700 req/s | 1,600 req/s | 199 MB |
 
-Native mode's budget is softer: Python used ~11 cores at 4,000 users, which is
-why it scores higher here than in Docker (~2,050 is its honest 4-core
-capacity). Full reports: [`results/native/summary.md`](results/native/summary.md).
+Native mode's budget is softer: Python, on its old thread-pool design, used
+~11 cores at 4,000 users, which is why it scored ~3,050 here against ~2,050 in
+Docker at the time. Its native row predates the event-loop change and hasn't
+been rerun. Full reports: [`results/native/summary.md`](results/native/summary.md).
 The C# and Java native runs were flagged because other programs were busy
 during their low-user levels.
 
@@ -151,6 +155,7 @@ language did:
 | Node | ~2,900 | ~5,050 | 4 cluster processes meant 4 caches that each missed ~58% of the time. Now one process with reader threads, on a driver whose SQLite has no global locks |
 | Rust | ~3,800 | ~5,100 | The cache policy (TinyLFU) rejected fresh entries, the bundled SQLite had a global page-cache lock, and slow gzip ran on the async threads |
 | Python | ~2,050 | ~3,050 | The same memory-statistics lock, switched off at runtime before `import sqlite3` |
+| Python (Docker) | ~2,050 | ~2,450 | Handlers ran on 4 threads per worker, but sqlite3 drops and retakes the GIL on every row, so the threads and the event loop queued for it. Reads now run on the event loop: single contact 5,800 → 59,000 req/s |
 | Rails | ~2,250 | ~3,000 | The sqlite3 gem holds Ruby's GVL during queries, so extra threads per worker only added switching |
 | Java | ~5,250 | ~5,600 | Parallel GC instead of G1, leaving the 4 cores to the query threads |
 | C | resets at 6,000 | 0 errors | SQLite ran on the HTTP I/O threads, so bursts left nobody accepting connections |
@@ -166,7 +171,8 @@ The lessons that carry over to any project:
 - **Keep blocking and CPU-heavy work off the threads that serve connections.**
   That applies to SQLite calls and gzip.
 - **More threads is rarely the fix.** Find the shared resource first: a pool, a
-  lock or a cache.
+  lock or a cache. In Python and Ruby the interpreter lock is one: Python's
+  handler threads cost 10x on single requests.
 - **Measure carefully.** Profilers distort latency, lock waits don't show up in
   CPU profiles, and macOS's own background indexing can take 3+ cores in the
   middle of a run.

@@ -47,7 +47,7 @@ class ResponseCache:
 
     def json(self, request: Request, key: str, compute: Callable[[], bytes]) -> Response:
         """Serve `compute()`'s JSON bytes, from cache when the data hasn't changed.
-        Runs in a worker thread (the route handlers are sync)."""
+        Runs on the event loop (the read handlers are async)."""
         full_key = (self._generation(request), key)
         entry = self._get(full_key)
         if entry is None:

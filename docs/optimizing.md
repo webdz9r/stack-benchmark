@@ -78,6 +78,13 @@ These were real bottlenecks in more than one stack.
 - **Work on the event loop.** SQLite, gzip or JSON on the threads that serve
   connections hold up every other request behind them (ARCH-11). In Rust the
   pure-Rust gzip on the 4 async workers tripled p99 at 4,000 users.
+- **Thread hops under an interpreter lock.** The reverse holds where a GIL
+  serializes the threads anyway. Python's `sqlite3` releases the GIL around
+  every step, so a 60-row query hands it back and forth with the event loop
+  dozens of times, each wait up to the 5 ms switch interval. Moving Python's
+  reads from a 4-thread pool onto the event loop took single contact from
+  5,800 to 59,000 req/s in Docker, and capacity from ~2,050 to ~2,450 users.
+  Check how many threads a request touches, not just how many you have.
 
 ## Run it in Docker too
 
@@ -88,7 +95,8 @@ getting for every stack:
 - **It enforces the core budget.** Natively, a stack's budget is only its own
   settings, and some spread past them: Python used ~11 cores at 4,000 users. In
   a container `--cpus=4` is a hard cap, so the Docker capacity is the honest
-  4-core number (Python: ~2,050 users, against ~3,050 natively). Watch
+  4-core number (Python's old thread-pool design: ~2,050 users, against ~3,050
+  natively; its 4 workers × ~7 threads were throttled 100% from 3,000 users). Watch
   `throttled_pct` in Docker reports: bursty runtimes (GC, JIT, helper threads)
   get paused by the quota even when their average CPU is under it.
 - **It runs on Linux and glibc.** That exposed a real bug in the C backend:

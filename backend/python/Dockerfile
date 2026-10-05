@@ -30,7 +30,7 @@ COPY --chmod=755 <<'EOT' /usr/local/bin/entrypoint
 set -e
 cmd="${1:-serve}"; [ $# -gt 0 ] && shift
 case "$cmd" in
-  serve) exec .venv/bin/uvicorn app.main:app --loop uvloop --http httptools --no-access-log "$@" ;;
+  serve) exec .venv/bin/uvicorn app.main:app --loop uvloop --http httptools --no-access-log --timeout-keep-alive 120 "$@" ;;
   seed)  exec .venv/bin/python seed.py "$@" ;;
   *)     exec "$cmd" "$@" ;;
 esac

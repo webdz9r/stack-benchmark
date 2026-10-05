@@ -2,11 +2,16 @@
 
     uv run uvicorn app.main:app --port 7879 --workers 4
 
-Handlers are plain `def`: FastAPI runs them in a thread pool, and sqlite3
-releases the GIL while SQLite executes, so queries overlap across threads.
+Reads are `async def` and run on the worker's event loop, one at a time, like
+a single-threaded Rails worker. A thread hop per request cost far more than it
+saved: sqlite3 drops and retakes the GIL on every row, so handler threads and
+the loop queued for it. Writes are plain `def` on a one-thread pool, so a write
+waiting out another worker's lock (busy_timeout) doesn't stall the loop.
+Parallelism comes from the worker processes.
 """
 
 import os
+import sys
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -26,8 +31,10 @@ from .errors import AppError
 from .models import ContactInput, FavoriteBody, TagInput
 
 DATABASE_PATH = os.environ.get("DATABASE_PATH", "data/address-book.db")
-# Threads per worker process running handlers (each gets a read connection).
-THREADS = int(os.environ.get("DB_READERS", "4"))
+# A write thread that gives up the GIL for each SQLite step waits up to the
+# switch interval to get it back from the busy event loop, while it holds the
+# database's write lock. 0.5 ms instead of 5 ms halved write p99 under load.
+sys.setswitchinterval(0.0005)
 STATIC_DIR = Path(os.environ.get("STATIC_DIR", "../../frontend/dist"))
 
 db = Db(DATABASE_PATH)
@@ -36,7 +43,8 @@ cache = ResponseCache(db, max_bytes=64 * 1024 * 1024, max_staleness=1.0)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    anyio.to_thread.current_default_thread_limiter().total_tokens = THREADS
+    # Only the write handlers use the pool, and they share one connection.
+    anyio.to_thread.current_default_thread_limiter().total_tokens = 1
     db.start_checkpointer()
     yield
 
@@ -74,12 +82,12 @@ async def http_error(_: Request, e: StarletteHTTPException):
 
 
 @app.get("/api/health")
-def health():
+async def health():
     return PlainTextResponse("ok")
 
 
 @app.get("/api/stats")
-def stats(request: Request):
+async def stats(request: Request):
     return cache.json(request, "stats", lambda: orjson.dumps(repo.stats(db.reader())))
 
 
@@ -88,7 +96,7 @@ def _filter_key(q, tag, favorite) -> str:
 
 
 @app.get("/api/contacts")
-def list_contacts(
+async def list_contacts(
     request: Request,
     q: str | None = None,
     tag: int | None = None,
@@ -115,7 +123,7 @@ def _favorite(value: str | None) -> bool:
 
 
 @app.get("/api/contacts/letters")
-def list_letters(request: Request, q: str | None = None, tag: int | None = None, favorite: str | None = None):
+async def list_letters(request: Request, q: str | None = None, tag: int | None = None, favorite: str | None = None):
     favorite = _favorite(favorite)
     return cache.json(
         request,
@@ -125,12 +133,12 @@ def list_letters(request: Request, q: str | None = None, tag: int | None = None,
 
 
 @app.get("/api/contacts/{contact_id}")
-def get_contact(contact_id: int):
+async def get_contact(contact_id: int):
     return json(repo.get_contact(db.reader(), contact_id))
 
 
 @app.get("/api/tags")
-def list_tags(request: Request):
+async def list_tags(request: Request):
     return cache.json(request, "tags", lambda: orjson.dumps(repo.list_tags(db.reader())))
 
 

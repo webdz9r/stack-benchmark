@@ -32,7 +32,6 @@ services:
     ports: ["127.0.0.1:7879:7879"]
     environment:
       DATABASE_PATH: /app/backend/python/data/address-book.db
-      DB_READERS: "4"
       UVICORN_HOST: "0.0.0.0"
       UVICORN_PORT: "7879"
       UVICORN_WORKERS: "4"

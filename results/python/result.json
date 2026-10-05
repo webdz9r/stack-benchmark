@@ -2,17 +2,17 @@
   "name": "python",
   "label": "Python",
   "description": "FastAPI, uvicorn (uvloop, httptools), sqlite3, orjson",
-  "concurrency": "4 workers x 4 threads",
+  "concurrency": "4 workers, reads on each event loop, 1 write thread each",
   "port": 7879,
   "slot": 1,
   "status": "ok",
   "error": "",
   "versions": [
-    "Python 3.14.7"
+    "Python 3.14.8"
   ],
-  "started_at": "2026-09-30T22:51:06",
+  "started_at": "2026-10-05T15:38:34",
   "mode": "docker",
-  "background_before_cores": 0.83,
+  "background_before_cores": 1.66,
   "run": {
     "machine": {
       "os": "Darwin",
@@ -28,11 +28,11 @@
       "python": "3.14.6"
     },
     "git": {
-      "commit": "92b273d",
+      "commit": "5b283bc",
       "dirty": true
     },
     "memory_metric": "container working set (cgroup memory.current minus inactive_file)",
-    "started_at": "2026-09-30T22:28:16",
+    "started_at": "2026-10-05T15:38:26",
     "profile": {
       "name": "standard",
       "endpoint_warmup": 2,
@@ -57,7 +57,7 @@
     "think_ms": 3000,
     "edit_pct": 5,
     "endpoint_clients": 50,
-    "notes": "Docker mode: Debian 13 images, network load generator, quiet-wait before each stack",
+    "notes": "",
     "busy_threshold": 1.8,
     "mode": "docker",
     "docker": {
@@ -70,11 +70,11 @@
     "loadgen": "network",
     "memory": "4g"
   },
-  "build_s": 1.8,
+  "build_s": 1.2,
   "docker": {
     "image": "stack-benchmark-python",
-    "image_id": "sha256:b455ea6aa08f",
-    "image_size": "250MB",
+    "image_id": "sha256:7a04ab654f62",
+    "image_size": "262MB",
     "base_image": "python:3.14-slim-trixie",
     "sqlite_version": "3.46.1",
     "loadgen": "network"
@@ -83,11 +83,11 @@
     "ok": true,
     "checksum": "4757200eff847274560a4359166b3c6977b0fb45b0bd5f7286c11a53a91fc86a"
   },
-  "startup_ms": 836,
-  "background_idle_cores": 0.26,
+  "startup_ms": 860,
+  "background_idle_cores": 1.73,
   "processes": 8,
-  "idle_memory_mb": 228.0,
-  "idle_rss_mb": 243.1,
+  "idle_memory_mb": 222.2,
+  "idle_rss_mb": 231.6,
   "parity": {
     "ok": true,
     "summary": "71 identical, 0 mismatched; 42/42 contract checks passed"
@@ -99,12 +99,12 @@
       "result": {
         "actions_per_s": 0.0,
         "all": {
-          "count": 46362,
-          "max_ms": 45.423,
-          "p50_ms": 6.425,
-          "p95_ms": 31.304,
-          "p99_ms": 38.483,
-          "req_s": 5795.25
+          "count": 472264,
+          "max_ms": 5.11,
+          "p50_ms": 0.831,
+          "p95_ms": 1.005,
+          "p99_ms": 1.183,
+          "req_s": 59033.0
         },
         "duration_s": 8,
         "edit_pct": 5,
@@ -113,12 +113,12 @@
         "errors": 0,
         "kinds": {
           "endpoint": {
-            "count": 46362,
-            "max_ms": 45.423,
-            "p50_ms": 6.425,
-            "p95_ms": 31.304,
-            "p99_ms": 38.483,
-            "req_s": 5795.25
+            "count": 472264,
+            "max_ms": 5.11,
+            "p50_ms": 0.831,
+            "p95_ms": 1.005,
+            "p99_ms": 1.183,
+            "req_s": 59033.0
           }
         },
         "not_modified": 0,
@@ -133,12 +133,12 @@
       "result": {
         "actions_per_s": 0.0,
         "all": {
-          "count": 11191,
-          "max_ms": 85.167,
-          "p50_ms": 27.876,
-          "p95_ms": 66.946,
-          "p99_ms": 74.663,
-          "req_s": 1398.875
+          "count": 119057,
+          "max_ms": 8.472,
+          "p50_ms": 2.951,
+          "p95_ms": 5.268,
+          "p99_ms": 5.567,
+          "req_s": 14882.125
         },
         "duration_s": 8,
         "edit_pct": 5,
@@ -147,12 +147,12 @@
         "errors": 0,
         "kinds": {
           "endpoint": {
-            "count": 11191,
-            "max_ms": 85.167,
-            "p50_ms": 27.876,
-            "p95_ms": 66.946,
-            "p99_ms": 74.663,
-            "req_s": 1398.875
+            "count": 119057,
+            "max_ms": 8.472,
+            "p50_ms": 2.951,
+            "p95_ms": 5.268,
+            "p99_ms": 5.567,
+            "req_s": 14882.125
           }
         },
         "not_modified": 0,
@@ -167,12 +167,12 @@
       "result": {
         "actions_per_s": 0.0,
         "all": {
-          "count": 10473,
-          "max_ms": 90.805,
-          "p50_ms": 23.729,
-          "p95_ms": 76.706,
-          "p99_ms": 83.066,
-          "req_s": 1309.125
+          "count": 28770,
+          "max_ms": 18.67,
+          "p50_ms": 13.437,
+          "p95_ms": 15.868,
+          "p99_ms": 16.323,
+          "req_s": 3596.25
         },
         "duration_s": 8,
         "edit_pct": 5,
@@ -181,12 +181,12 @@
         "errors": 0,
         "kinds": {
           "endpoint": {
-            "count": 10473,
-            "max_ms": 90.805,
-            "p50_ms": 23.729,
-            "p95_ms": 76.706,
-            "p99_ms": 83.066,
-            "req_s": 1309.125
+            "count": 28770,
+            "max_ms": 18.67,
+            "p50_ms": 13.437,
+            "p95_ms": 15.868,
+            "p99_ms": 16.323,
+            "req_s": 3596.25
           }
         },
         "not_modified": 0,
@@ -201,12 +201,12 @@
       "result": {
         "actions_per_s": 0.0,
         "all": {
-          "count": 126547,
-          "max_ms": 15.321,
-          "p50_ms": 2.709,
-          "p95_ms": 4.609,
-          "p99_ms": 10.765,
-          "req_s": 15818.375
+          "count": 216698,
+          "max_ms": 4.692,
+          "p50_ms": 1.738,
+          "p95_ms": 2.61,
+          "p99_ms": 2.857,
+          "req_s": 27087.25
         },
         "duration_s": 8,
         "edit_pct": 5,
@@ -215,12 +215,12 @@
         "errors": 0,
         "kinds": {
           "endpoint": {
-            "count": 126547,
-            "max_ms": 15.321,
-            "p50_ms": 2.709,
-            "p95_ms": 4.609,
-            "p99_ms": 10.765,
-            "req_s": 15818.375
+            "count": 216698,
+            "max_ms": 4.692,
+            "p50_ms": 1.738,
+            "p95_ms": 2.61,
+            "p99_ms": 2.857,
+            "req_s": 27087.25
           }
         },
         "not_modified": 0,
@@ -235,12 +235,12 @@
       "result": {
         "actions_per_s": 0.0,
         "all": {
-          "count": 147586,
-          "max_ms": 16.859,
-          "p50_ms": 2.304,
-          "p95_ms": 4.061,
-          "p99_ms": 10.615,
-          "req_s": 18448.25
+          "count": 415688,
+          "max_ms": 3.285,
+          "p50_ms": 0.967,
+          "p95_ms": 1.116,
+          "p99_ms": 1.237,
+          "req_s": 51961.0
         },
         "duration_s": 8,
         "edit_pct": 5,
@@ -249,12 +249,12 @@
         "errors": 0,
         "kinds": {
           "endpoint": {
-            "count": 147586,
-            "max_ms": 16.859,
-            "p50_ms": 2.304,
-            "p95_ms": 4.061,
-            "p99_ms": 10.615,
-            "req_s": 18448.25
+            "count": 415688,
+            "max_ms": 3.285,
+            "p50_ms": 0.967,
+            "p95_ms": 1.116,
+            "p99_ms": 1.237,
+            "req_s": 51961.0
           }
         },
         "not_modified": 0,
@@ -269,12 +269,12 @@
       "result": {
         "actions_per_s": 0.0,
         "all": {
-          "count": 165006,
-          "max_ms": 21.327,
-          "p50_ms": 1.752,
-          "p95_ms": 4.364,
-          "p99_ms": 13.693,
-          "req_s": 20625.75
+          "count": 711293,
+          "max_ms": 7.078,
+          "p50_ms": 0.544,
+          "p95_ms": 0.724,
+          "p99_ms": 0.826,
+          "req_s": 88911.625
         },
         "duration_s": 8,
         "edit_pct": 5,
@@ -283,12 +283,12 @@
         "errors": 0,
         "kinds": {
           "endpoint": {
-            "count": 165006,
-            "max_ms": 21.327,
-            "p50_ms": 1.752,
-            "p95_ms": 4.364,
-            "p99_ms": 13.693,
-            "req_s": 20625.75
+            "count": 711293,
+            "max_ms": 7.078,
+            "p50_ms": 0.544,
+            "p95_ms": 0.724,
+            "p99_ms": 0.826,
+            "req_s": 88911.625
           }
         },
         "not_modified": 0,
@@ -302,14 +302,14 @@
     {
       "users": 1000,
       "result": {
-        "actions_per_s": 328.76666666666665,
+        "actions_per_s": 328.6666666666667,
         "all": {
-          "count": 18987,
-          "max_ms": 35.617,
-          "p50_ms": 1.759,
-          "p95_ms": 7.551,
-          "p99_ms": 10.968,
-          "req_s": 632.9
+          "count": 18975,
+          "max_ms": 50.224,
+          "p50_ms": 3.516,
+          "p95_ms": 15.635,
+          "p99_ms": 29.307,
+          "req_s": 632.5
         },
         "duration_s": 30,
         "edit_pct": 5,
@@ -318,68 +318,68 @@
         "errors": 0,
         "kinds": {
           "contact": {
-            "count": 3002,
-            "max_ms": 4.032,
-            "p50_ms": 0.365,
-            "p95_ms": 0.985,
-            "p99_ms": 2.013,
-            "req_s": 100.06666666666666
+            "count": 3000,
+            "max_ms": 44.941,
+            "p50_ms": 0.339,
+            "p95_ms": 10.791,
+            "p99_ms": 22.184,
+            "req_s": 100.0
           },
           "letters": {
-            "count": 1056,
-            "max_ms": 11.54,
-            "p50_ms": 5.183,
-            "p95_ms": 9.119,
-            "p99_ms": 10.539,
-            "req_s": 35.2
+            "count": 1055,
+            "max_ms": 43.619,
+            "p50_ms": 6.44,
+            "p95_ms": 18.438,
+            "p99_ms": 29.098,
+            "req_s": 35.166666666666664
           },
           "list": {
-            "count": 4550,
-            "max_ms": 35.617,
-            "p50_ms": 1.112,
-            "p95_ms": 9.917,
-            "p99_ms": 28.724,
-            "req_s": 151.66666666666666
+            "count": 4548,
+            "max_ms": 48.273,
+            "p50_ms": 2.33,
+            "p95_ms": 18.42,
+            "p99_ms": 31.606,
+            "req_s": 151.6
           },
           "search": {
-            "count": 4335,
-            "max_ms": 14.799,
-            "p50_ms": 2.955,
-            "p95_ms": 7.299,
-            "p99_ms": 9.334,
-            "req_s": 144.5
+            "count": 4333,
+            "max_ms": 50.224,
+            "p50_ms": 4.403,
+            "p95_ms": 15.431,
+            "p99_ms": 27.365,
+            "req_s": 144.43333333333334
           },
           "search-letters": {
-            "count": 4335,
-            "max_ms": 12.851,
-            "p50_ms": 1.878,
-            "p95_ms": 5.47,
-            "p99_ms": 7.633,
-            "req_s": 144.5
+            "count": 4333,
+            "max_ms": 50.079,
+            "p50_ms": 3.472,
+            "p95_ms": 14.3,
+            "p99_ms": 27.037,
+            "req_s": 144.43333333333334
           },
           "stats": {
-            "count": 585,
-            "max_ms": 9.705,
-            "p50_ms": 5.789,
-            "p95_ms": 7.329,
-            "p99_ms": 8.245,
-            "req_s": 19.5
+            "count": 584,
+            "max_ms": 42.542,
+            "p50_ms": 8.281,
+            "p95_ms": 18.181,
+            "p99_ms": 31.24,
+            "req_s": 19.466666666666665
           },
           "tags": {
-            "count": 585,
-            "max_ms": 7.255,
-            "p50_ms": 4.128,
-            "p95_ms": 5.373,
-            "p99_ms": 6.138,
-            "req_s": 19.5
+            "count": 584,
+            "max_ms": 38.374,
+            "p50_ms": 8.139,
+            "p95_ms": 15.136,
+            "p99_ms": 25.163,
+            "req_s": 19.466666666666665
           },
           "write": {
-            "count": 539,
-            "max_ms": 27.755,
-            "p50_ms": 0.607,
-            "p95_ms": 1.789,
-            "p99_ms": 11.402,
-            "req_s": 17.966666666666665
+            "count": 538,
+            "max_ms": 40.44,
+            "p50_ms": 0.676,
+            "p95_ms": 14.779,
+            "p99_ms": 26.027,
+            "req_s": 17.933333333333334
           }
         },
         "not_modified": 2311,
@@ -387,26 +387,26 @@
         "users": 1000,
         "warmup_s": 10
       },
-      "cpu_cores": 1.47,
-      "background_cores": 0.37,
-      "rss_mb": 345.1,
-      "memory_after_mb": 374.6,
+      "cpu_cores": 1.33,
+      "background_cores": 1.54,
+      "rss_mb": 299.8,
+      "memory_after_mb": 338.9,
       "server_alive": true,
       "throttled_pct": 0.0,
       "throttled_ms_per_s": 0.0,
-      "docker_host_cores": 1.66
+      "docker_host_cores": 1.5
     },
     {
       "users": 2000,
       "result": {
-        "actions_per_s": 649.5333333333333,
+        "actions_per_s": 648.3,
         "all": {
-          "count": 37778,
-          "max_ms": 149.969,
-          "p50_ms": 1.787,
-          "p95_ms": 8.843,
-          "p99_ms": 32.314,
-          "req_s": 1259.2666666666667
+          "count": 37694,
+          "max_ms": 112.885,
+          "p50_ms": 5.846,
+          "p95_ms": 27.32,
+          "p99_ms": 44.68,
+          "req_s": 1256.4666666666667
         },
         "duration_s": 30,
         "edit_pct": 5,
@@ -415,95 +415,95 @@
         "errors": 0,
         "kinds": {
           "contact": {
-            "count": 5837,
-            "max_ms": 130.766,
-            "p50_ms": 0.475,
-            "p95_ms": 2.857,
-            "p99_ms": 25.926,
-            "req_s": 194.56666666666666
+            "count": 5821,
+            "max_ms": 78.828,
+            "p50_ms": 2.023,
+            "p95_ms": 22.907,
+            "p99_ms": 38.411,
+            "req_s": 194.03333333333333
           },
           "letters": {
-            "count": 2079,
-            "max_ms": 128.847,
-            "p50_ms": 5.114,
-            "p95_ms": 9.731,
-            "p99_ms": 27.454,
-            "req_s": 69.3
+            "count": 2075,
+            "max_ms": 70.972,
+            "p50_ms": 8.904,
+            "p95_ms": 28.207,
+            "p99_ms": 44.599,
+            "req_s": 69.16666666666667
           },
           "list": {
-            "count": 8953,
-            "max_ms": 145.227,
-            "p50_ms": 1.506,
-            "p95_ms": 11.321,
-            "p99_ms": 35.392,
-            "req_s": 298.43333333333334
+            "count": 8936,
+            "max_ms": 78.464,
+            "p50_ms": 5.336,
+            "p95_ms": 27.951,
+            "p99_ms": 43.152,
+            "req_s": 297.8666666666667
           },
           "search": {
-            "count": 8791,
-            "max_ms": 149.969,
-            "p50_ms": 2.892,
-            "p95_ms": 8.945,
-            "p99_ms": 35.796,
-            "req_s": 293.03333333333336
+            "count": 8774,
+            "max_ms": 78.527,
+            "p50_ms": 6.436,
+            "p95_ms": 27.516,
+            "p99_ms": 43.225,
+            "req_s": 292.46666666666664
           },
           "search-letters": {
-            "count": 8791,
-            "max_ms": 145.217,
-            "p50_ms": 1.805,
-            "p95_ms": 6.726,
-            "p99_ms": 30.316,
-            "req_s": 293.03333333333336
+            "count": 8774,
+            "max_ms": 78.254,
+            "p50_ms": 5.93,
+            "p95_ms": 27.541,
+            "p99_ms": 42.965,
+            "req_s": 292.46666666666664
           },
           "stats": {
-            "count": 1136,
-            "max_ms": 93.038,
-            "p50_ms": 5.776,
-            "p95_ms": 8.737,
-            "p99_ms": 16.752,
-            "req_s": 37.86666666666667
+            "count": 1132,
+            "max_ms": 66.726,
+            "p50_ms": 9.876,
+            "p95_ms": 24.979,
+            "p99_ms": 40.216,
+            "req_s": 37.733333333333334
           },
           "tags": {
-            "count": 1136,
-            "max_ms": 92.723,
-            "p50_ms": 4.146,
-            "p95_ms": 7.165,
-            "p99_ms": 11.854,
-            "req_s": 37.86666666666667
+            "count": 1132,
+            "max_ms": 66.883,
+            "p50_ms": 8.62,
+            "p95_ms": 22.737,
+            "p99_ms": 37.539,
+            "req_s": 37.733333333333334
           },
           "write": {
-            "count": 1055,
-            "max_ms": 79.576,
-            "p50_ms": 0.71,
-            "p95_ms": 4.878,
-            "p99_ms": 13.287,
-            "req_s": 35.166666666666664
+            "count": 1050,
+            "max_ms": 112.885,
+            "p50_ms": 1.214,
+            "p95_ms": 51.192,
+            "p99_ms": 80.205,
+            "req_s": 35.0
           }
         },
-        "not_modified": 4589,
+        "not_modified": 4575,
         "think_ms": 3000,
         "users": 2000,
         "warmup_s": 10
       },
-      "cpu_cores": 2.65,
-      "background_cores": 0.34,
-      "rss_mb": 523.8,
-      "memory_after_mb": 577.6,
+      "cpu_cores": 2.39,
+      "background_cores": 1.34,
+      "rss_mb": 476.4,
+      "memory_after_mb": 549.9,
       "server_alive": true,
-      "throttled_pct": 8.9,
-      "throttled_ms_per_s": 154.1,
-      "docker_host_cores": 2.94
+      "throttled_pct": 0.0,
+      "throttled_ms_per_s": 0.0,
+      "docker_host_cores": 2.62
     },
     {
       "users": 3000,
       "result": {
-        "actions_per_s": 658.8,
+        "actions_per_s": 968.0333333333333,
         "all": {
-          "count": 36894,
-          "max_ms": 1976.733,
-          "p50_ms": 1372.079,
-          "p95_ms": 1621.643,
-          "p99_ms": 1728.046,
-          "req_s": 1229.8
+          "count": 56110,
+          "max_ms": 1271.941,
+          "p50_ms": 23.158,
+          "p95_ms": 96.035,
+          "p99_ms": 170.582,
+          "req_s": 1870.3333333333333
         },
         "duration_s": 30,
         "edit_pct": 5,
@@ -512,95 +512,95 @@
         "errors": 0,
         "kinds": {
           "contact": {
-            "count": 5737,
-            "max_ms": 1821.229,
-            "p50_ms": 1365.244,
-            "p95_ms": 1606.102,
-            "p99_ms": 1712.572,
-            "req_s": 191.23333333333332
+            "count": 8706,
+            "max_ms": 316.181,
+            "p50_ms": 20.624,
+            "p95_ms": 86.747,
+            "p99_ms": 118.623,
+            "req_s": 290.2
           },
           "letters": {
-            "count": 2014,
-            "max_ms": 1826.196,
-            "p50_ms": 1371.64,
-            "p95_ms": 1617.656,
-            "p99_ms": 1720.264,
-            "req_s": 67.13333333333334
+            "count": 3010,
+            "max_ms": 190.768,
+            "p50_ms": 21.982,
+            "p95_ms": 94.007,
+            "p99_ms": 124.029,
+            "req_s": 100.33333333333333
           },
           "list": {
-            "count": 8789,
-            "max_ms": 1976.733,
-            "p50_ms": 1376.161,
-            "p95_ms": 1620.566,
-            "p99_ms": 1726.811,
-            "req_s": 292.96666666666664
+            "count": 13216,
+            "max_ms": 291.366,
+            "p50_ms": 22.38,
+            "p95_ms": 88.71,
+            "p99_ms": 120.568,
+            "req_s": 440.53333333333336
           },
           "search": {
-            "count": 8616,
-            "max_ms": 1843.047,
-            "p50_ms": 1375.05,
-            "p95_ms": 1635.8,
-            "p99_ms": 1737.557,
-            "req_s": 287.2
+            "count": 13180,
+            "max_ms": 313.754,
+            "p50_ms": 24.478,
+            "p95_ms": 90.311,
+            "p99_ms": 122.371,
+            "req_s": 439.3333333333333
           },
           "search-letters": {
-            "count": 8616,
-            "max_ms": 1832.611,
-            "p50_ms": 1368.379,
-            "p95_ms": 1629.964,
-            "p99_ms": 1728.457,
-            "req_s": 287.2
+            "count": 13180,
+            "max_ms": 318.991,
+            "p50_ms": 24.362,
+            "p95_ms": 90.29,
+            "p99_ms": 121.701,
+            "req_s": 439.3333333333333
           },
           "stats": {
-            "count": 1081,
-            "max_ms": 1813.191,
-            "p50_ms": 1381.327,
-            "p95_ms": 1609.544,
-            "p99_ms": 1776.428,
-            "req_s": 36.03333333333333
+            "count": 1638,
+            "max_ms": 180.808,
+            "p50_ms": 19.468,
+            "p95_ms": 84.567,
+            "p99_ms": 120.447,
+            "req_s": 54.6
           },
           "tags": {
-            "count": 1081,
-            "max_ms": 1812.359,
-            "p50_ms": 1373.758,
-            "p95_ms": 1605.191,
-            "p99_ms": 1697.472,
-            "req_s": 36.03333333333333
+            "count": 1638,
+            "max_ms": 180.478,
+            "p50_ms": 17.895,
+            "p95_ms": 84.879,
+            "p99_ms": 120.868,
+            "req_s": 54.6
           },
           "write": {
-            "count": 960,
-            "max_ms": 1804.48,
-            "p50_ms": 1389.477,
-            "p95_ms": 1597.427,
-            "p99_ms": 1689.448,
-            "req_s": 32.0
+            "count": 1542,
+            "max_ms": 1271.941,
+            "p50_ms": 69.969,
+            "p95_ms": 695.236,
+            "p99_ms": 933.325,
+            "req_s": 51.4
           }
         },
-        "not_modified": 4180,
+        "not_modified": 6790,
         "think_ms": 3000,
         "users": 3000,
         "warmup_s": 10
       },
-      "cpu_cores": 4.0,
-      "background_cores": 0.31,
-      "rss_mb": 786.5,
-      "memory_after_mb": 782.6,
+      "cpu_cores": 3.66,
+      "background_cores": 1.39,
+      "rss_mb": 726.4,
+      "memory_after_mb": 698.3,
       "server_alive": true,
-      "throttled_pct": 100.0,
-      "throttled_ms_per_s": 7786.2,
-      "docker_host_cores": 4.45
+      "throttled_pct": 41.0,
+      "throttled_ms_per_s": 8.3,
+      "docker_host_cores": 4.07
     },
     {
       "users": 4000,
       "result": {
-        "actions_per_s": 692.5,
+        "actions_per_s": 1188.1333333333334,
         "all": {
-          "count": 37337,
-          "max_ms": 3409.835,
-          "p50_ms": 2636.463,
-          "p95_ms": 3077.182,
-          "p99_ms": 3206.373,
-          "req_s": 1244.5666666666666
+          "count": 66764,
+          "max_ms": 13557.968,
+          "p50_ms": 68.138,
+          "p95_ms": 169.171,
+          "p99_ms": 6693.713,
+          "req_s": 2225.4666666666667
         },
         "duration_s": 30,
         "edit_pct": 5,
@@ -609,91 +609,91 @@
         "errors": 0,
         "kinds": {
           "contact": {
-            "count": 5803,
-            "max_ms": 3320.302,
-            "p50_ms": 2627.448,
-            "p95_ms": 3068.661,
-            "p99_ms": 3198.348,
-            "req_s": 193.43333333333334
+            "count": 10628,
+            "max_ms": 871.673,
+            "p50_ms": 66.248,
+            "p95_ms": 144.811,
+            "p99_ms": 192.17,
+            "req_s": 354.26666666666665
           },
           "letters": {
-            "count": 2112,
-            "max_ms": 3296.731,
-            "p50_ms": 2621.498,
-            "p95_ms": 3094.399,
-            "p99_ms": 3201.562,
-            "req_s": 70.4
+            "count": 3176,
+            "max_ms": 879.965,
+            "p50_ms": 62.657,
+            "p95_ms": 143.467,
+            "p99_ms": 187.501,
+            "req_s": 105.86666666666666
           },
           "list": {
-            "count": 8833,
-            "max_ms": 3409.835,
-            "p50_ms": 2636.821,
-            "p95_ms": 3076.327,
-            "p99_ms": 3206.411,
-            "req_s": 294.43333333333334
+            "count": 15599,
+            "max_ms": 893.281,
+            "p50_ms": 66.009,
+            "p95_ms": 145.87,
+            "p99_ms": 193.917,
+            "req_s": 519.9666666666667
           },
           "search": {
-            "count": 8663,
-            "max_ms": 3341.038,
-            "p50_ms": 2643.154,
-            "p95_ms": 3070.428,
-            "p99_ms": 3207.059,
-            "req_s": 288.76666666666665
+            "count": 16311,
+            "max_ms": 1021.362,
+            "p50_ms": 68.6,
+            "p95_ms": 147.245,
+            "p99_ms": 209.741,
+            "req_s": 543.7
           },
           "search-letters": {
-            "count": 8663,
-            "max_ms": 3320.944,
-            "p50_ms": 2640.567,
-            "p95_ms": 3067.336,
-            "p99_ms": 3219.481,
-            "req_s": 288.76666666666665
+            "count": 16311,
+            "max_ms": 1005.348,
+            "p50_ms": 68.602,
+            "p95_ms": 147.57,
+            "p99_ms": 207.589,
+            "req_s": 543.7
           },
           "stats": {
-            "count": 1127,
-            "max_ms": 3306.357,
-            "p50_ms": 2606.059,
-            "p95_ms": 3094.548,
-            "p99_ms": 3205.787,
-            "req_s": 37.56666666666667
+            "count": 1425,
+            "max_ms": 485.785,
+            "p50_ms": 53.763,
+            "p95_ms": 139.319,
+            "p99_ms": 174.83,
+            "req_s": 47.5
           },
           "tags": {
-            "count": 1127,
-            "max_ms": 3304.085,
-            "p50_ms": 2597.335,
-            "p95_ms": 3090.189,
-            "p99_ms": 3202.611,
-            "req_s": 37.56666666666667
+            "count": 1425,
+            "max_ms": 229.071,
+            "p50_ms": 53.752,
+            "p95_ms": 139.198,
+            "p99_ms": 173.73,
+            "req_s": 47.5
           },
           "write": {
-            "count": 1009,
-            "max_ms": 3220.228,
-            "p50_ms": 2669.188,
-            "p95_ms": 3086.053,
-            "p99_ms": 3194.739,
-            "req_s": 33.63333333333333
+            "count": 1889,
+            "max_ms": 13557.968,
+            "p50_ms": 5035.926,
+            "p95_ms": 10485.514,
+            "p99_ms": 13103.559,
+            "req_s": 62.96666666666667
           }
         },
-        "not_modified": 4280,
+        "not_modified": 8304,
         "think_ms": 3000,
         "users": 4000,
         "warmup_s": 10
       },
-      "cpu_cores": 4.0,
-      "background_cores": 1.95,
-      "rss_mb": 956.2,
-      "memory_after_mb": 907.1,
+      "cpu_cores": 3.99,
+      "background_cores": 1.31,
+      "rss_mb": 783.3,
+      "memory_after_mb": 724.9,
       "server_alive": true,
-      "throttled_pct": 100.0,
-      "throttled_ms_per_s": 7674.8,
-      "docker_host_cores": 4.45
+      "throttled_pct": 77.7,
+      "throttled_ms_per_s": 21.3,
+      "docker_host_cores": 4.51
     }
   ],
   "seed": {
     "ok": true,
     "count": 100000,
-    "insert_ms": 4372.5,
-    "per_sec": 22870,
-    "wall_s": 4.83
+    "insert_ms": 4355.8,
+    "per_sec": 22958,
+    "wall_s": 4.84
   },
-  "finished_at": "2026-09-30T22:56:14"
+  "finished_at": "2026-10-05T15:43:42"
 }
