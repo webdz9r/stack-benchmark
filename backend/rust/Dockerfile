@@ -10,6 +10,8 @@ COPY frontend/ ./
 RUN npm run build
 
 FROM rust:1-slim-trixie AS build
+# make builds the bundled jemalloc (tikv-jemalloc-sys).
+RUN apt-get update && apt-get install -y --no-install-recommends make && rm -rf /var/lib/apt/lists/*
 WORKDIR /app/backend/rust
 COPY backend/migrations /app/backend/migrations
 COPY backend/rust/ ./

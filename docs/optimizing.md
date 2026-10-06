@@ -85,6 +85,15 @@ These were real bottlenecks in more than one stack.
   reads from a 4-thread pool onto the event loop took single contact from
   5,800 to 59,000 req/s in Docker, and capacity from ~2,050 to ~2,450 users.
   Check how many threads a request touches, not just how many you have.
+- **Unbounded blocking pools.** Tokio's `spawn_blocking` pool grows to 512
+  threads. With 50 busy connections Rust's grew to ~80, all queueing for 4 read
+  connections, so each query woke and parked several threads. Natively that
+  was cheap; in Docker's VM it halved single-contact throughput. Capping the
+  pool at `DB_READERS` doubled it (35,000 → 64,000 req/s). Count context
+  switches per request: `/proc/<pid>/task/*/status` in the container.
+- **The allocator, on Linux.** glibc's malloc cost Rust ~25% on list pages in
+  Docker, an effect macOS hides. Preloading jemalloc or mimalloc
+  (`LD_PRELOAD`) into an existing image is a five-minute test.
 
 ## Run it in Docker too
 

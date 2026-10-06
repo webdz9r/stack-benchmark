@@ -7,8 +7,32 @@ use tower_http::services::{ServeDir, ServeFile};
 use tower_http::trace::TraceLayer;
 use tracing_subscriber::EnvFilter;
 
-#[tokio::main]
-async fn main() {
+// jemalloc instead of the system allocator. On Linux (Docker), glibc's malloc
+// cost ~25% of throughput on list pages; SQLite still uses the system malloc.
+#[global_allocator]
+static GLOBAL: tikv_jemallocator::Jemalloc = tikv_jemallocator::Jemalloc;
+
+fn main() {
+    // One read connection per core by default; DB_READERS overrides it (e.g. to
+    // mimic a small VM together with TOKIO_WORKER_THREADS).
+    let readers = std::env::var("DB_READERS")
+        .ok()
+        .and_then(|v| v.parse().ok())
+        .unwrap_or_else(|| std::thread::available_parallelism().map_or(4, |n| n.get() as u32));
+    // Every query runs on the blocking pool. Tokio would grow it to 512 threads,
+    // and under load ~80 of them queued for the read connections, each query
+    // waking and parking several (3 context switches per request in Docker).
+    // One thread per read connection lets them take queued work without
+    // parking; writes and the checkpoint queue in the same pool.
+    tokio::runtime::Builder::new_multi_thread()
+        .enable_all()
+        .max_blocking_threads(readers as usize)
+        .build()
+        .expect("failed to start the Tokio runtime")
+        .block_on(run(readers));
+}
+
+async fn run(readers: u32) {
     tracing_subscriber::fmt()
         .with_env_filter(
             EnvFilter::try_from_default_env()
@@ -17,12 +41,6 @@ async fn main() {
         .init();
 
     let db_path = database_path();
-    // One read connection per core by default; DB_READERS overrides it (e.g. to
-    // mimic a small VM together with TOKIO_WORKER_THREADS).
-    let readers = std::env::var("DB_READERS")
-        .ok()
-        .and_then(|v| v.parse().ok())
-        .unwrap_or_else(|| std::thread::available_parallelism().map_or(4, |n| n.get() as u32));
     let db = Db::open(&db_path, readers).expect("failed to open database");
     tracing::info!(path = %db_path, readers, "database ready");
 

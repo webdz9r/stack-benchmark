@@ -90,7 +90,7 @@ Each stack in its Debian 13 container, held to exactly 4 CPUs by the kernel
 | C# (ASP.NET Core) | ≥ 6,000 | 62,100 req/s | 17,200 req/s | 41 MB | 1% |
 | C (libmicrohttpd) | ≥ 6,000 | 88,000 req/s | 26,200 req/s | 3 MB | 11% |
 | Go (net/http) | ~5,300 | 58,400 req/s | 19,300 req/s | 15 MB | 14% |
-| Rust (Axum) | ~5,250 | 35,000 req/s | 14,400 req/s | 4 MB | 26% |
+| Rust (Axum) | ~5,150 | 73,600 req/s | 20,900 req/s | 13 MB | 36% |
 | Node (Fastify) | ~4,850 | 38,000 req/s | 14,700 req/s | 91 MB | 62% |
 | Java (Spring Boot) | ~4,700 | 34,100 req/s | 13,100 req/s | 176 MB | 62% |
 | Rails (direct SQL) | ~2,850 | 15,400 req/s | 8,400 req/s | 116 MB | 38% |
@@ -108,8 +108,9 @@ report a click away (for example [Rust](results/rust/report.md)). These runs
 were flagged busy: macOS's own background indexing (`corespotlightd`,
 `mediaanalysisd`) kept starting while the machine sat idle overnight, so treat
 the exact numbers as noisy. The pattern held across two full runs. Python was
-rerun on its own on 2026-10-05, after its reads moved to the event loop (see
-below); that run was quiet. In a same-day rerun next to it, Rails reached
+rerun on its own on 2026-10-05, after its reads moved to the event loop, and
+Rust on 2026-10-06, after capping its blocking pool and switching to jemalloc
+(see below); both runs were quiet. In a same-day rerun next to it, Rails reached
 ~2,300 (flagged busy), so treat the two as roughly level.
 
 ### Native
@@ -131,8 +132,8 @@ cores by its runtime settings only (`GOMAXPROCS=4`, 4 workers, and so on).
 
 Native mode's budget is softer: Python, on its old thread-pool design, used
 ~11 cores at 4,000 users, which is why it scored ~3,050 here against ~2,050 in
-Docker at the time. Its native row predates the event-loop change and hasn't
-been rerun. Full reports: [`results/native/summary.md`](results/native/summary.md).
+Docker at the time. Its native row predates the event-loop change, and Rust's
+predates its blocking-pool cap and jemalloc; neither has been rerun. Full reports: [`results/native/summary.md`](results/native/summary.md).
 The C# and Java native runs were flagged because other programs were busy
 during their low-user levels.
 
@@ -155,6 +156,7 @@ language did:
 | Node | ~2,900 | ~5,050 | 4 cluster processes meant 4 caches that each missed ~58% of the time. Now one process with reader threads, on a driver whose SQLite has no global locks |
 | Rust | ~3,800 | ~5,100 | The cache policy (TinyLFU) rejected fresh entries, the bundled SQLite had a global page-cache lock, and slow gzip ran on the async threads |
 | Python | ~2,050 | ~3,050 | The same memory-statistics lock, switched off at runtime before `import sqlite3` |
+| Rust (Docker) | 35,000 req/s | 73,600 req/s | Single contact. Tokio's blocking pool grew to ~80 threads queueing for 4 read connections, 3 context switches per query, which is expensive in Docker's VM; glibc's malloc cost another ~25%. Capped the pool at `DB_READERS` and switched to jemalloc. Capacity stayed ~5,150–5,250 users |
 | Python (Docker) | ~2,050 | ~2,450 | Handlers ran on 4 threads per worker, but sqlite3 drops and retakes the GIL on every row, so the threads and the event loop queued for it. Reads now run on the event loop: single contact 5,800 → 59,000 req/s |
 | Rails | ~2,250 | ~3,000 | The sqlite3 gem holds Ruby's GVL during queries, so extra threads per worker only added switching |
 | Java | ~5,250 | ~5,600 | Parallel GC instead of G1, leaving the 4 cores to the query threads |
