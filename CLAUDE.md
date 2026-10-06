@@ -139,8 +139,9 @@ each `backend/<stack>/README.md` and its `bench.json`. Some stack-specific point
   - `DB_READERS=4` (Node: 4 reader threads in one process)
   - 4 workers (Python, Rails)
 
-  Python's threads still spread past 4 cores, because sqlite3 and gzip release
-  the GIL. Report that; don't hide it.
+  Natively, nothing but these settings holds a stack to 4 cores, and some
+  spread past them (Python's old thread-pool design reached ~11 cores). Report
+  that; don't hide it. Docker's `--cpus=4` enforces the budget.
 - **Compare numbers from the same run.** When a stack is added or changed, rerun
   `python3 bench/run.py` for all stacks rather than mixing new numbers with old
   ones. If you do mix them, say so in the README.
@@ -195,9 +196,23 @@ each `backend/<stack>/README.md` and its `bench.json`. Some stack-specific point
 Follow [`docs/optimizing.md`](docs/optimizing.md): reproduce outside the suite,
 compare single-endpoint throughput, probe the read pool and the cache, change
 one thing at a time. Each `backend/<stack>/README.md` has an **Optimizing**
-section with what was already found and tried there; read it first, and add
-to it. Then add a dated row to [`docs/optimization-log.md`](docs/optimization-log.md)
-for every change you measured, kept or not.
+section with what was already found and tried there; read it first.
+
+When you change or optimize a stack, update all of these in the same change:
+1. **The stack's README:** its Optimizing section (what you found, what helped,
+   what didn't), plus any settings or deviations that changed.
+2. **[`docs/optimization-log.md`](docs/optimization-log.md):** a dated row for
+   every change you measured, kept or not, with before → after, the mode
+   (Docker or native) and a status. Keep its `## <label>` headings equal to the
+   stack's `label` in `bench.json`: each report shows its stack's section.
+3. **The reports:** rerun the suite for the stack (`python3 bench/run.py
+   --stacks <stack>`), which rebuilds them. After editing only the log, rebuild
+   them with `python3 bench/report.py` and `python3 bench/report.py
+   results/native`, so every `results/<stack>/report.*` shows the new history.
+4. **Docs that quote the numbers:** `README.md` (results tables, the note on
+   when each stack was measured, "What we learned"), and `docs/optimizing.md`
+   when the finding is a lesson for other stacks. Say which stacks were rerun
+   and when, since the results then mix runs.
 
 ## Adding a new stack
 
