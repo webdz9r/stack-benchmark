@@ -77,3 +77,12 @@ Simulated users open the app, then act every ~3 s on average: scroll or jump let
 | Search `smith` (cached) | 20,283 | 2.4 ms | 3.7 ms | 0 |
 | A–Z index (cached) | 52,983 | 0.9 ms | 2.6 ms | 0 |
 | Stats (cached) | 70,866 | 0.6 ms | 2.4 ms | 0 |
+
+## Optimization history
+
+Every change tried on this stack, oldest first, from [the optimization log](../../docs/optimization-log.md).
+
+| When | Change | Effect | Status |
+| --- | --- | --- | --- |
+| before 2026-09-30 | one process with reader threads instead of 4 cluster workers (4 caches missed ~58% each) | native: ~2,900 → ~5,050 users; single contact ~70,000 → ~39,000 req/s (a message hop per uncached request) | kept |
+| before 2026-09-30 | reader threads on the built-in `node:sqlite` (global locks on) | native: p99 630 ms at 2,000 users, worse than the cluster; switched to `better-sqlite3`, whose SQLite has no global locks | reverted |

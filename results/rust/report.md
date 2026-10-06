@@ -73,3 +73,19 @@ Simulated users open the app, then act every ~3 s on average: scroll or jump let
 | Search `smith` (cached) | 74,205 | 0.6 ms | 1.5 ms | 0 |
 | A–Z index (cached) | 141,566 | 0.3 ms | 0.7 ms | 0 |
 | Stats (cached) | 184,014 | 0.3 ms | 0.5 ms | 0 |
+
+## Optimization history
+
+Every change tried on this stack, oldest first, from [the optimization log](../../docs/optimization-log.md).
+
+| When | Change | Effect | Status |
+| --- | --- | --- | --- |
+| before 2026-09-30 | moka cache: LRU instead of TinyLFU, which rejected fresh entries after each generation bump | hit rate ~50% → ~65%; the biggest of the first three fixes | kept |
+| before 2026-09-30 | SQLite built with `DEFAULT_MEMSTATUS=0`, without `ENABLE_MEMORY_MANAGEMENT` (`.cargo/config.toml`) | removes two global mutexes from the read path | kept |
+| before 2026-09-30 | `flate2` on the `zlib-rs` backend instead of pure-Rust `miniz_oxide` | native: p99 at 4,000 users 117 → 48 ms; capacity (all three fixes) ~3,800 → ~5,100 | kept |
+| before 2026-09-30 | semaphore in front of `spawn_blocking`; 8 async workers instead of 4 | native: neither moved p99 | no effect |
+| 2026-10-06 | blocking pool capped at `DB_READERS` threads (was up to 512; ~80 in use, 3.2 context switches per query) | Docker: single contact 35,000 → 64,000–66,000 req/s; write p99 at 6,000 users ~11 → 44–61 ms | kept |
+| 2026-10-06 | semaphore of `DB_READERS` in front of reads, instead of the cap | Docker: single contact ~46,000 req/s, but never throttled (list p99 at saturation 4 ms vs 46 ms) | no effect (cap kept) |
+| 2026-10-06 | jemalloc as the global allocator | Docker: list page 16,200 → 21,400 req/s; with the cap, single contact 35,000 → 73,600, list 14,400 → 20,900; capacity ~5,250 *(busy)* → ~5,150 | kept |
+| open | dedicated write thread, so writes don't queue behind reads in the capped pool |  | open |
+| open | gzip each cache entry once when stored, instead of on every hit |  | open |

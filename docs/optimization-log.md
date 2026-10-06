@@ -3,7 +3,9 @@
 Every performance change made to a stack, in order, with what it did. This
 includes what didn't help: a dead end recorded here is one nobody repeats.
 
-Each stack's README has the full story in its **Optimizing** section (how it was
+Each stack's benchmark report (`results/<stack>/report.html`) shows its section
+of this log, matched by the stack's label, so keep the `## <label>` headings
+as they are. Each stack's README has the full story in its **Optimizing** section (how it was
 found, tools, open leads); this log is the dated index across all of them. For
 the method, see [`optimizing.md`](optimizing.md).
 
@@ -21,7 +23,9 @@ from a run the suite flagged busy are marked *(busy)*.
 Entries dated "before 2026-09-30" predate the repo's history, so their exact
 dates weren't recorded.
 
-## Rust (reference)
+## Rust
+
+The reference implementation.
 
 | When | Change | Effect | Status |
 | --- | --- | --- | --- |

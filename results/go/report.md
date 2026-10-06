@@ -76,3 +76,12 @@ Simulated users open the app, then act every ~3 s on average: scroll or jump let
 | Search `smith` (cached) | 78,616 | 0.5 ms | 1.8 ms | 0 |
 | A–Z index (cached) | 156,978 | 0.3 ms | 1.1 ms | 0 |
 | Stats (cached) | 218,021 | 0.2 ms | 0.9 ms | 0 |
+
+## Optimization history
+
+Every change tried on this stack, oldest first, from [the optimization log](../../docs/optimization-log.md).
+
+| When | Change | Effect | Status |
+| --- | --- | --- | --- |
+| before 2026-09-30 | keep `-O2` in `CGO_CFLAGS` (setting it had dropped the default) | native: ~1,500 → ~5,500 users | kept |
+| open | p99 at 6,000 users (~133 ms) |  | open |

@@ -76,3 +76,14 @@ Simulated users open the app, then act every ~3 s on average: scroll or jump let
 | Search `smith` (cached) | 64,145 | 0.7 ms | 1.9 ms | 0 |
 | A–Z index (cached) | 106,113 | 0.4 ms | 1.1 ms | 0 |
 | Stats (cached) | 146,383 | 0.3 ms | 0.8 ms | 0 |
+
+## Optimization history
+
+Every change tried on this stack, oldest first, from [the optimization log](../../docs/optimization-log.md).
+
+| When | Change | Effect | Status |
+| --- | --- | --- | --- |
+| before 2026-09-30 | SQLite memory statistics off at startup (`Db.cs`) | native: ~3,250 → 6,000+ users | kept |
+| before 2026-09-30 | cache subtracts the size of entries dropped for TTL (~20% of the 64 MiB was dead) |  | kept |
+| before 2026-09-30 | `DOTNET_ThreadPool_ForceMinWorkerThreads=0x10` | p99 worse | no effect |
+| before 2026-09-30 | GC ruled out: Server GC paused 53 ms over a full ramp |  | no effect |

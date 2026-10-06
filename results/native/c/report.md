@@ -72,3 +72,12 @@ Simulated users open the app, then act every ~3 s on average: scroll or jump let
 | Search `smith` (cached) | 64,301 | 0.7 ms | 1.6 ms | 0 |
 | A–Z index (cached) | 136,758 | 0.3 ms | 0.7 ms | 0 |
 | Stats (cached) | 154,286 | 0.3 ms | 0.7 ms | 0 |
+
+## Optimization history
+
+Every change tried on this stack, oldest first, from [the optimization log](../../../docs/optimization-log.md).
+
+| When | Change | Effect | Status |
+| --- | --- | --- | --- |
+| before 2026-09-30 | SQLite on worker threads, not the libmicrohttpd I/O threads | native: resets at 6,000 users → 0 errors, p99 77 ms; single contact ~91,000 → ~48,000 req/s | kept |
+| before 2026-09-30 | `MHD_OPTION_LISTEN_BACKLOG_SIZE 1024` | macOS caps the backlog at 128 | no effect |

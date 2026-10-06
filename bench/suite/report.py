@@ -20,9 +20,16 @@ from __future__ import annotations
 import html
 import json
 import math
+import os
+import re
 from pathlib import Path
 
 CAPACITY_P99_MS = 100.0
+
+# Every optimization tried on each stack; each report shows its own section.
+OPTIMIZATION_LOG = Path(__file__).resolve().parents[2] / "docs" / "optimization-log.md"
+# Stacks that share another's code, and so its history.
+LOG_SECTION_OF = {"rails-ar": "Rails"}
 
 # Categorical palette (validated reference instance): slot i -> (light, dark).
 PALETTE = [
@@ -35,6 +42,33 @@ REQUEST_KINDS = [
     ("letters", "A–Z index"), ("contact", "Open a contact"), ("write", "Save a contact"), ("tags", "Tags"),
     ("stats", "Stats"), ("endpoint", "Single endpoint"),
 ]
+
+
+# ---------------------------------------------------------------- optimization log
+
+def optimization_log(r: dict) -> tuple[list[str], list[list[str]]] | None:
+    """This stack's table from docs/optimization-log.md (its `## <label>` section),
+    as (headers, rows) of markdown cells; None if the log has no table for it."""
+    try:
+        text = OPTIMIZATION_LOG.read_text()
+    except OSError:
+        return None
+    heading = LOG_SECTION_OF.get(r["name"], r["label"])
+    section = re.search(rf"^## {re.escape(heading)}\n(.*?)(?=^## |\Z)", text, re.M | re.S)
+    if not section:
+        return None
+    lines = [l for l in section.group(1).splitlines() if l.startswith("|")]
+    if len(lines) < 3:
+        return None
+    cells = lambda l: [c.strip() for c in l.strip().strip("|").split("|")]
+    return cells(lines[0]), [cells(l) for l in lines[2:]]
+
+
+def md_inline_html(text: str) -> str:
+    """The little markdown the log uses (`code`, *emphasis*), as HTML."""
+    out = e(text)
+    out = re.sub(r"`([^`]+)`", r"<code>\1</code>", out)
+    return re.sub(r"\*([^*]+)\*", r"<em>\1</em>", out)
 
 
 # ---------------------------------------------------------------- numbers
@@ -354,6 +388,12 @@ def stack_markdown(r: dict) -> str:
                  fmt_ms(x["result"].get("all", {}).get("p50_ms")), fmt_ms(x["result"].get("all", {}).get("p99_ms")),
                  fmt_int(x["result"].get("errors"))] for x in r["endpoints"]]
         out += ["## Single endpoints", "", md_table(["Request", "req/s", "p50", "p99", "Errors"], rows, {1, 2, 3, 4}), ""]
+    log = optimization_log(r)
+    if log:
+        href = r.get("_log_href", "../../docs/optimization-log.md")
+        out += ["## Optimization history", "",
+                f"Every change tried on this stack, oldest first, from [the optimization log]({href}).", "",
+                md_table(*log), ""]
     return "\n".join(out)
 
 
@@ -426,6 +466,7 @@ th,td{padding:8px 10px;border-bottom:1px solid var(--rule);text-align:left;verti
 th{font-weight:600;color:var(--ink2);font-size:12px}
 td.num,th.num{text-align:right}
 td.wrap{white-space:normal;min-width:220px}
+td code{font-size:12px;background:var(--grid);padding:0 3px;border-radius:3px}
 .swatch{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:8px;vertical-align:-1px}
 .bar{position:relative;min-width:140px}
 .bar span{position:relative;z-index:1}
@@ -741,6 +782,17 @@ def stack_html(r: dict) -> str:
               e(fmt_ms(x["result"].get("all", {}).get("p50_ms"))), e(fmt_ms(x["result"].get("all", {}).get("p99_ms"))),
               e(fmt_int(x["result"].get("errors")))] for x in r["endpoints"]],
             {2, 3, 4}, raw=True))
+
+    log = optimization_log(r)
+    if log:
+        headers, rows = log
+        href = r.get("_log_href", "../../docs/optimization-log.md")
+        body.append("<h2>Optimization history</h2>")
+        body.append(f"<p class='note'>Every change tried on this stack, oldest first, from "
+                    f"<a href='{e(href)}'>the optimization log</a>. Status: kept, reverted, no effect "
+                    f"(measured, didn't help) or open (not acted on yet).</p>")
+        body.append(html_table(headers, [[md_inline_html(c) for c in row] for row in rows],
+                               raw=True, wrap={1, 2}))
     return page(f"{r['label']}: benchmark results", "".join(body))
 
 
@@ -750,6 +802,7 @@ def write_stack(root: Path, r: dict) -> None:
     """results/<stack>/report.{md,html} from the stack's result (which carries its run details)."""
     d = root / r["name"]
     d.mkdir(parents=True, exist_ok=True)
+    r = {**r, "_log_href": os.path.relpath(OPTIMIZATION_LOG, d)}
     (d / "report.md").write_text(stack_markdown(r))
     (d / "report.html").write_text(stack_html(r))
 

@@ -74,3 +74,13 @@ Simulated users open the app, then act every ~3 s on average: scroll or jump let
 | Search `smith` (cached) | 80,737 | 0.5 ms | 1.5 ms | 0 |
 | A–Z index (cached) | 123,330 | 0.4 ms | 0.9 ms | 0 |
 | Stats (cached) | 134,431 | 0.3 ms | 0.8 ms | 0 |
+
+## Optimization history
+
+Every change tried on this stack, oldest first, from [the optimization log](../../../docs/optimization-log.md).
+
+| When | Change | Effect | Status |
+| --- | --- | --- | --- |
+| before 2026-09-30 | Parallel GC instead of G1 | native: p99 at 5,000 users 84 → 71 ms and 172 → 77 ms (two A/Bs); at 6,000, 429 → 170 ms; capacity ~5,250 → ~5,600 | kept |
+| before 2026-09-30 | generational ZGC | p99 126 ms at 5,000 users, worse than G1 | no effect |
+| open | virtual threads, `-Xmx`, AppCDS for startup |  | open |

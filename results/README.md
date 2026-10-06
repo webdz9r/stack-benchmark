@@ -10,7 +10,8 @@ results/
   summary.md     the same tables as Markdown
   summary.json   every backend's current result, machine-readable
   <stack>/
-    report.html  that backend in detail: latency percentiles, throughput, CPU and memory charts
+    report.html  that backend in detail: latency percentiles, throughput, CPU and memory charts,
+                 and its optimization history (from docs/optimization-log.md)
     report.md
     result.json  its measurements, plus the machine, profile, core budget, date and background load
     ramp-<users>.json, *.log   raw load-test output and logs

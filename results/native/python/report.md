@@ -72,3 +72,18 @@ Simulated users open the app, then act every ~3 s on average: scroll or jump let
 | Search `smith` (cached) | 19,407 | 2.1 ms | 5.0 ms | 0 |
 | A–Z index (cached) | 26,281 | 1.9 ms | 3.1 ms | 0 |
 | Stats (cached) | 33,646 | 1.5 ms | 2.1 ms | 0 |
+
+## Optimization history
+
+Every change tried on this stack, oldest first, from [the optimization log](../../../docs/optimization-log.md).
+
+| When | Change | Effect | Status |
+| --- | --- | --- | --- |
+| before 2026-09-30 | SQLite memory statistics off via `sqlite3_config` through `ctypes`, before `import sqlite3` | native: ~2,050 → ~3,050 users; p99 at 3,000 users 690 → 36 ms | kept |
+| before 2026-09-30 | one free-threaded process (Python 3.14t, no GIL, `msgspec`) | topped out at ~1,500 req/s: one event loop running Starlette | no effect |
+| 2026-10-05 | reads `async def` on the event loop instead of a 4-thread pool per worker (sqlite3 trades the GIL on every row) | Docker: ~2,050 *(busy)* → ~2,450 users; single contact 5,800 → 59,000 req/s; list page 1,400 → 14,900; p99 at 1,000 users 11 → 29 ms | kept |
+| 2026-10-05 | `DB_READERS=1` only (one thread, same hop) | Docker: single contact 13,200, list 6,100 req/s | superseded |
+| 2026-10-05 | cache misses on a 2-thread pool, hits on the loop | Docker: p99 at 1,000 users 13 ms, but searches queued for the GIL (p50 ~700 ms at 3,000 users) | no effect |
+| 2026-10-05 | writes on the event loop too | Docker: busy-handler sleeps stall the loop; p99 297 ms at 2,000 users | no effect |
+| 2026-10-05 | `sys.setswitchinterval(0.0005)` | Docker: write p99 at 1,000 users ~45 → ~22 ms | kept |
+| 2026-10-05 | uvicorn `--timeout-keep-alive 120` (was 5 s; the load generator pools for 90 s) | Docker: connection resets 2 in 12 runs → 0 in 5 | kept |

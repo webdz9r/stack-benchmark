@@ -70,3 +70,14 @@ Simulated users open the app, then act every ~3 s on average: scroll or jump let
 | Search `smith` (cached) | 18,363 | 2.7 ms | 4.5 ms | 0 |
 | A–Z index (cached) | 20,287 | 2.4 ms | 3.9 ms | 0 |
 | Stats (cached) | 21,497 | 2.3 ms | 4.0 ms | 0 |
+
+## Optimization history
+
+Every change tried on this stack, oldest first, from [the optimization log](../../../docs/optimization-log.md).
+
+| When | Change | Effect | Status |
+| --- | --- | --- | --- |
+| before 2026-09-30 | one thread per Puma worker (`RAILS_MAX_THREADS=1`); the sqlite3 gem holds the GVL during queries | native, raw SQL: ~2,250 → ~3,000 users; p99 at 3,000 users ~590 → ~140 ms. ActiveRecord: neutral | kept |
+| before 2026-09-30 | GC tuning (`RUBY_GC_HEAP_*_INIT_SLOTS`, malloc limits) | ~1,430 req/s either way | no effect |
+| before 2026-09-30 | removing unneeded middleware (`Rack::Runtime`, `RequestId`, `RemoteIp`, `Sendfile`, logger) | ~1,430 req/s either way | no effect |
+| open | a driver that releases the GVL (e.g. `extralite`), raw data layer only |  | open |
