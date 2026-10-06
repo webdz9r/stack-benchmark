@@ -22,7 +22,7 @@
 
 > **Warning:** other programs were using the CPU while this ran, so these results are noisy.
 
-**Stack:** Fastify, built-in node:sqlite on worker threads  
+**Stack:** Fastify, better-sqlite3 on worker threads  
 **Concurrency:** 1 process: event loop + 4 reader threads + 1 writer thread  
 **Versions:** v26.10.0  
 

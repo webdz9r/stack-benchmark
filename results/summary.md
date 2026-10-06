@@ -65,7 +65,7 @@
 | --- | --- | --- | --- | --- | --- |
 | Rust | Axum, rusqlite (bundled SQLite), moka cache | 1 process, 4 Tokio threads, 4 read connections | ✅ pass | reference | ok |
 | Python | FastAPI, uvicorn (uvloop, httptools), sqlite3, orjson | 4 workers, reads on each event loop, 1 write thread each | ✅ pass | ✅ pass | ok |
-| Node | Fastify, built-in node:sqlite on worker threads | 1 process: event loop + 4 reader threads + 1 writer thread | ✅ pass | ✅ pass | ok |
+| Node | Fastify, better-sqlite3 on worker threads | 1 process: event loop + 4 reader threads + 1 writer thread | ✅ pass | ✅ pass | ok |
 | Rails | Rails 8.1 API, Puma, sqlite3 gem (direct SQL) | 4 Puma workers x 1 thread | ✅ pass | ✅ pass | ok |
 | Rails + ActiveRecord | Same Rails app on ActiveRecord models | 4 Puma workers x 1 thread | ✅ pass | ✅ pass | ok |
 | Go | net/http, mattn/go-sqlite3, klauspost gzip | 1 process, GOMAXPROCS=4, 4 read connections | ✅ pass | ✅ pass | ok |

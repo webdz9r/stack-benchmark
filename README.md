@@ -180,7 +180,9 @@ The lessons that carry over to any project:
   middle of a run.
 
 The full method, tools and pitfalls are in
-[`docs/optimizing.md`](docs/optimizing.md). Each `backend/<stack>/README.md`
+[`docs/optimizing.md`](docs/optimizing.md), and every change tried on every
+stack, dated and with its effect, is in
+[`docs/optimization-log.md`](docs/optimization-log.md). Each `backend/<stack>/README.md`
 has an **Optimizing** section with what was tried there, including what didn't
 help.
 

@@ -45,6 +45,7 @@ copy of the schema.
 | `CONTRIBUTING.md` | you review or prepare a pull request: the ground rules for contributions |
 | `docs/requirements/` | you build or change a backend (the spec, above) |
 | `docs/optimizing.md` | you tune a stack: the method, what to check first, profiling tools, measurement pitfalls |
+| `docs/optimization-log.md` | you tune a stack: every change tried on every stack, dated, with its effect, including what didn't help. Add a row for each change you try |
 | `backend/<stack>/README.md` | you work on that stack: its settings, deviations from the spec, and an **Optimizing** section with what was already found and tried |
 | `bench/README.md` | you run the suite, change it, or register a stack (`bench.json` format) |
 | `results/README.md` | you need the layout of benchmark output and how reports are rebuilt |
@@ -74,6 +75,7 @@ results/             published reference results: summary.* plus one folder per 
 logs/                bench.log: progress of every benchmark run (git-ignored; tail -f it)
 docs/requirements/   the spec
 docs/optimizing.md   how to find and fix a stack's bottlenecks
+docs/optimization-log.md  every optimization tried, per stack, dated
 docs/plans/          proposals not built yet
 ```
 
@@ -194,7 +196,8 @@ Follow [`docs/optimizing.md`](docs/optimizing.md): reproduce outside the suite,
 compare single-endpoint throughput, probe the read pool and the cache, change
 one thing at a time. Each `backend/<stack>/README.md` has an **Optimizing**
 section with what was already found and tried there; read it first, and add
-to it.
+to it. Then add a dated row to [`docs/optimization-log.md`](docs/optimization-log.md)
+for every change you measured, kept or not.
 
 ## Adding a new stack
 

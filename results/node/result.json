@@ -1,7 +1,7 @@
 {
   "name": "node",
   "label": "Node",
-  "description": "Fastify, built-in node:sqlite on worker threads",
+  "description": "Fastify, better-sqlite3 on worker threads",
   "concurrency": "1 process: event loop + 4 reader threads + 1 writer thread",
   "port": 7880,
   "slot": 2,

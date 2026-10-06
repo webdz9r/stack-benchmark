@@ -47,7 +47,8 @@ seed checksum (VER-1), and it must not do less work than the other stacks.
    them before benchmarking.
 
 5. **Change one thing, rerun the same trial**, and keep what moved p99. Write
-   down what didn't help as well, in the stack's README.
+   down what didn't help as well, in the stack's README, and add a dated row
+   to [`optimization-log.md`](optimization-log.md) either way.
 
 6. **Record it with the suite:** `python3 bench/run.py --stacks <stack>`.
 
